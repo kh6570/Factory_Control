@@ -1,3 +1,5 @@
+In the name of God, the Most Gracious, the Most Merciful
+
 
 # FSEC Android – Camera Module Plan
 

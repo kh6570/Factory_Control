@@ -1,3 +1,4 @@
+// In the name of God, the Most Gracious, the Most Merciful
 package com.raghim.herz.ui.theme
 
 import androidx.compose.material3.Typography

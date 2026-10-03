@@ -1,3 +1,5 @@
+In the name of God, the Most Gracious, the Most Merciful
+
 
 # Building and Testing the FSEC Android App with Cursor
 

@@ -1,3 +1,4 @@
+@rem In the name of God, the Most Gracious, the Most Merciful
 @rem
 @rem Copyright 2015 the original author or authors.
 @rem

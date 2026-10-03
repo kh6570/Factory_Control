@@ -1,3 +1,5 @@
+In the name of God, the Most Gracious, the Most Merciful
+
 <div dir="rtl">
 
 # سیستم امنیتی و کنترل درب کارخانه: سند طراحی نسخه ۱.۱

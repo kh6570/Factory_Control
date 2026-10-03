@@ -1,3 +1,5 @@
+In the name of God, the Most Gracious, the Most Merciful
+
 # Factory Security & Door Control System: Technical Specification v1.2
 
 | Part | Content |

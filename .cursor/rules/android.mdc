@@ -1,0 +1,29 @@
+---
+description: Herz Android app rules for Cursor
+alwaysApply: true
+---
+In the name of God, the Most Gracious, the Most Merciful
+
+# Project
+- Factory security app. The full spec is in docs/technical-spec.md (Part D = Android architecture, Part B11 = server events).
+- The Android project is in android/. Run Gradle from that directory.
+- Display name Herz. Application id and namespace: com.raghim.herz. Do not change them.
+- Kotlin only, Jetpack Compose, Material 3, minSdk 26, MVI with StateFlow.
+- Modules: follow the module graph in spec D3. Feature modules must not depend on other feature modules.
+- DI: Hilt. Database: Room. Network: Retrofit + OkHttp + kotlinx.serialization.
+- Library versions are only in android/gradle/libs.versions.toml. Never hardcode versions in build files.
+- Every new or edited text file starts with: In the name of God, the Most Gracious, the Most Merciful. Use a comment when the format requires it. See .cursor/rules/opening-line.mdc.
+
+# Workflow
+- After every change, from android/, run: ./gradlew :<module>:testDebugUnitTest
+- Before finishing a task, from android/, run: ./gradlew assembleDebug lint
+- After the dev flavor exists, use testDevDebugUnitTest and assembleDevDebug instead.
+- If a build fails, read the full error, fix the cause, and run again. Do not delete or skip tests to make a build pass.
+- Write unit tests for every ViewModel and use case (JUnit + Turbine + fakes in :core:testing).
+- Small steps: one module or one feature per task.
+- On Windows the wrapper command is gradlew.bat. ./gradlew also works in PowerShell from android/.
+
+# Security (do not simplify)
+- Never log tokens, passwords or full URLs with credentials.
+- Do not disable certificate pinning or allow cleartext, not even for testing. Use the dev flavor config instead.
+- The DeviceKey / BiometricPrompt code must follow spec D11 exactly.

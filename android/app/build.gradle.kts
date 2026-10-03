@@ -1,3 +1,4 @@
+// In the name of God, the Most Gracious, the Most Merciful
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -11,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.raghim.herz"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"

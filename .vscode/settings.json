@@ -1,0 +1,9 @@
+{
+  "kotlin-formatter.ktlintPath": "C:\\Users\\habed\\AppData\\Local\\ktlint\\ktlint",
+  "[kotlin]": {
+    "editor.defaultFormatter": "cstef.kotlin-formatter"
+  },
+  "[kotlinscript]": {
+    "editor.defaultFormatter": "cstef.kotlin-formatter"
+  }
+}

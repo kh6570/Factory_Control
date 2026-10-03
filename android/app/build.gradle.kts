@@ -38,6 +38,20 @@ android {
 }
 
 dependencies {
+    // Wiring only: :app is the one module allowed to see everything (spec D3)
+    listOf(
+        ":core:model", ":core:common", ":core:domain",
+        ":core:data", ":core:network", ":core:database", ":core:datastore",
+        ":core:security", ":core:notifications", ":core:designsystem", ":core:ui",
+        ":core:video", ":core:video-rtsp", ":core:video-webrtc",
+        ":camera:discovery", ":camera:onvif",
+        ":feature:auth", ":feature:dashboard", ":feature:cameras", ":feature:liveview",
+        ":feature:alarms", ":feature:playback", ":feature:recordings", ":feature:doors",
+        ":feature:devices", ":feature:rules", ":feature:users", ":feature:settings",
+        ":feature:discovery",
+    ).forEach { implementation(project(it)) }
+    testImplementation(project(":core:testing"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

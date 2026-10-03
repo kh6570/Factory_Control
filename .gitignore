@@ -1,0 +1,12 @@
+# In the name of God, the Most Gracious, the Most Merciful
+# Machine-specific IDE state
+.idea/caches/
+.idea/workspace.xml
+**/.idea/caches/
+**/.idea/deploymentTargetSelector.xml
+**/.idea/deviceManager.xml
+**/.idea/studiobot.xml
+
+# Local tools
+ktlint
+*.log

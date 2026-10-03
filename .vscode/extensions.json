@@ -1,5 +1,6 @@
 {
   "recommendations": [
-    "fwcd.kotlin"
+    "fwcd.kotlin",
+    "diemasmichiels.emulate"
   ]
 }

@@ -26,7 +26,7 @@ Rejected package names: `com.example.herz`, `com.sun.herz`, `com.hafez.herz`.
 ```
 2026_01_10_Factory_CTRL/
   docs/          specifications and this progress log
-  android/       Android Studio project (only :app so far)
+  android/       Android Studio project: :app, build-logic/, core/, camera/, feature/
 ```
 
 On a new machine, keep this layout. Android Studio will not generate a project into a non-empty folder, so the app stays in `android/`, not in the repo root.
@@ -38,6 +38,8 @@ On a new machine, keep this layout. Android Studio will not generate a project i
 | [technical-spec.md](technical-spec.md) | Board, protocol, server, Android architecture |
 | [camera-module-plan.md](camera-module-plan.md) | First software slice |
 | [android-dev-setup.md](android-dev-setup.md) | How to build and test the app |
+| [android-architecture.md](android-architecture.md) | Module graph, dependency rules, per-module status |
+| [android-todo.md](android-todo.md) | Ordered Android task list |
 | [setup-progress.md](setup-progress.md) | This log. Status beats the other docs if they disagree |
 
 ## Status
@@ -52,14 +54,17 @@ Last updated: 2026-10-03.
 | Create Empty Activity (Compose) project | Done | [android](../android) |
 | Set minSdk to 26 | Done | [android/app/build.gradle.kts](../android/app/build.gradle.kts) |
 | Gradle sync after minSdk change | In progress | User has Android Studio open. Use Sync there. Do not start a second Gradle sync from the terminal while Studio is syncing |
-| Create emulator and run Herz | In progress | User is doing this in Android Studio |
+| API 35 Google Play system image | Done | `system-images/android-35/google_apis_playstore/x86_64`, revision 9. SHA1 `2f0054868e6aab3c098acd3decba17a82aed4176`. The SDK installer kept dying near 54% and then wiped a finished cache file, so the zip was downloaded to `D:\AndroidSdkCache\x86_64-35_r09.zip` and unpacked into the SDK. Do not start a second install of this package |
+| API 35 platform | Done | `platforms/android-35` installed with `android sdk install`. Exit 0 |
+| Create emulator and run Herz | In progress | Device Manager can use the API 35 Google Play image. An API 37.0 Google Play image is also already installed |
 | `ANDROID_HOME` and PATH | Done | User variables. New terminals only. SDK is `%LOCALAPPDATA%\Android\Sdk` |
 | Kotlin extension | Done in this VS Code | `fwcd.kotlin` is installed. Cursor should install the same recommendation in `.vscode/extensions.json` |
+| ktlint for the editor formatter | Done on this machine | Kotlin Formatter (`cstef.kotlin-formatter`) looks for `.\ktlint` or `kotlin-formatter.ktlintPath`. Jar is `%LOCALAPPDATA%\ktlint\ktlint`, version 1.8.0. Workspace setting is in `.vscode/settings.json`. Do not commit the jar |
 | Opening line on project files | Done | Exact line required. See Opening line below |
 | Cursor Android rules | Done | `.cursor/rules/android.mdc`, from the setup doc |
 | AI rules for VS Code, Cursor, and Android Studio | Done | Opening line, plus the Cursor Android rules |
 | Git commit of the skeleton | Not done | After the emulator shows Hello Android |
-| Module skeleton | Not started | Do not start until the empty app runs |
+| Module skeleton | Done 2026-10-03 | `build-logic/` convention plugins and 30 empty modules wired into `:app`. Layout and per-module status: [android-architecture.md](android-architecture.md). Task list: [android-todo.md](android-todo.md) |
 
 ## What the generated project already has
 
@@ -109,10 +114,10 @@ Do not put the line in binary files, JSON, or generated output under `build/` or
 
 ## Current next step
 
-Finish the emulator run that is already in progress.
+The API 35 Google Play x86_64 image is installed. Finish the emulator run.
 
 1. In Android Studio, click Sync if it asks after the minSdk edit.
-2. Device Manager: create a phone AVD with a Google Play or Google APIs system image, API 34 or 35.
+2. Device Manager: create a phone AVD with the Google Play image, API 35. Do not download that system image again.
 3. Run the `app` configuration.
 4. Stop when the screen says `Hello Android!`.
 5. Tell the AI. `ANDROID_HOME` is already set for new terminals. The following task is `adb devices`, then a git commit of the skeleton. Not modules yet.
@@ -120,7 +125,7 @@ Finish the emulator run that is already in progress.
 ## Not yet
 
 - Product flavors `dev` and `prod`.
-- Convention plugins and the module graph (`:core:model`, `:feature:liveview`, and the rest).
-- Fake cameras and the adaptive grid.
+- Hilt, Room, and serialization convention plugins.
+- Code inside any module. Fake cameras and the adaptive grid.
 - Real video, discovery, doors, alarms, FCM.
 - Hardware, MQTT, and the central server.

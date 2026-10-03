@@ -12,7 +12,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         pluginManager.apply("com.android.library")
         extensions.configure<LibraryExtension> { configureAndroidLibrary(this) }
         dependencies {
+            "implementation"(libs.findLibrary("kotlinx-coroutines-android").get())
             "testImplementation"(libs.findLibrary("junit").get())
+            "testImplementation"(libs.findLibrary("kotlinx-coroutines-test").get())
+            "testImplementation"(libs.findLibrary("turbine").get())
         }
     }
 }

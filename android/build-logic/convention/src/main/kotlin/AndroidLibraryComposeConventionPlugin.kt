@@ -16,6 +16,7 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
             "implementation"(platform(bom))
             "implementation"(libs.findLibrary("androidx-compose-ui").get())
             "implementation"(libs.findLibrary("androidx-compose-material3").get())
+            "implementation"(libs.findLibrary("androidx-compose-material-icons-core").get())
             "implementation"(libs.findLibrary("androidx-compose-ui-tooling-preview").get())
             "debugImplementation"(libs.findLibrary("androidx-compose-ui-tooling").get())
             "androidTestImplementation"(platform(bom))

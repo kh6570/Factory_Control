@@ -8,4 +8,7 @@ dependencies {
     api(project(":core:model"))
     api(project(":core:common"))
     api(project(":core:video"))
+    api(libs.junit)
+    api(libs.kotlinx.coroutines.test)
+    api(libs.turbine)
 }

@@ -2,3 +2,7 @@
 plugins {
     alias(libs.plugins.herz.jvm.library)
 }
+
+dependencies {
+    api(libs.javax.inject)
+}

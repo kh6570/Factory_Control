@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="liveview_title">Live</string>
+    <string name="liveview_title_count">Live · %1$d</string>
+    <string name="liveview_add_cameras">Add cameras</string>
+    <string name="liveview_empty_title">No cameras on the wall</string>
+    <string name="liveview_empty_body">Start cameras from the Cameras tab or add a new one.</string>
+    <string name="liveview_offline_banner">No network – live video paused</string>
+    <string name="liveview_camera_stopped">Camera stopped</string>
+    <string name="liveview_stop_camera">Stop camera</string>
+    <string name="liveview_minimize">Back to grid</string>
+    <string name="liveview_page_indicator">%1$d / %2$d</string>
+    <string name="liveview_retry">Retry</string>
+    <string name="liveview_paused_tile">Paused to save bandwidth – tap to view</string>
+
+    <string name="liveview_source_alarm">ALARM</string>
+    <string name="liveview_source_manual">MANUAL</string>
+
+    <string name="liveview_status_live">LIVE</string>
+    <string name="liveview_status_connecting">Connecting</string>
+    <string name="liveview_status_paused">Paused</string>
+    <string name="liveview_status_offline">Offline</string>
+    <string name="liveview_status_unreachable">Unreachable</string>
+    <string name="liveview_status_unauthorized">Login failed</string>
+    <string name="liveview_status_unsupported">Unsupported</string>
+    <string name="liveview_status_lost">Connection lost</string>
+    <string name="liveview_status_error">Error</string>
+
+    <string name="liveview_error_unreachable">The camera can\'t be reached.</string>
+    <string name="liveview_error_unauthorized">Login failed. Check the camera login in Cameras.</string>
+    <string name="liveview_error_unsupported">This video format isn\'t supported.</string>
+    <string name="liveview_error_lost">The connection was lost.</string>
+    <string name="liveview_error_unknown">The video couldn\'t play.</string>
+</resources>

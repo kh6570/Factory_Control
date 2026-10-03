@@ -21,7 +21,10 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             compilerOptions.jvmTarget.set(JvmTarget.fromTarget(HerzSdk.JAVA.toString()))
         }
         dependencies {
+            "implementation"(libs.findLibrary("kotlinx-coroutines-core").get())
             "testImplementation"(libs.findLibrary("junit").get())
+            "testImplementation"(libs.findLibrary("kotlinx-coroutines-test").get())
+            "testImplementation"(libs.findLibrary("turbine").get())
         }
     }
 }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="cameras_title">Cameras</string>
+    <string name="cameras_selected_count">%1$d selected</string>
+    <string name="cameras_clear_selection">Clear selection</string>
+    <string name="cameras_start_selected">Start selected</string>
+    <string name="cameras_stop_selected">Stop selected</string>
+    <string name="cameras_show_live_wall">Show live wall (%1$d)</string>
+    <string name="cameras_add_camera">Add camera</string>
+    <string name="cameras_empty_title">No cameras yet</string>
+    <string name="cameras_empty_body">Herz finds cameras that are on the same Wi-Fi as this phone. You can also add a camera by its IP address or RTSP URL.</string>
+    <string name="cameras_find_cameras">Find cameras</string>
+    <string name="cameras_status_on_wall">On wall</string>
+    <string name="cameras_status_off">Off</string>
+    <string name="cameras_start">Start</string>
+    <string name="cameras_stop">Stop</string>
+    <string name="cameras_more_options">More options for %1$s</string>
+    <string name="cameras_select">Select %1$s</string>
+    <string name="cameras_rename">Rename</string>
+    <string name="cameras_remove">Remove</string>
+    <string name="cameras_rename_title">Rename camera</string>
+    <string name="cameras_name_label">Name</string>
+    <string name="cameras_save">Save</string>
+    <string name="cameras_cancel">Cancel</string>
+    <string name="cameras_remove_title">Remove camera?</string>
+    <string name="cameras_remove_body">%1$s will be removed from this phone, together with its saved login.</string>
+    <string name="cameras_message_removed">%1$s removed</string>
+    <plurals name="cameras_message_started">
+        <item quantity="one">Started %1$d camera</item>
+        <item quantity="other">Started %1$d cameras</item>
+    </plurals>
+    <plurals name="cameras_message_stopped">
+        <item quantity="one">Stopped %1$d camera</item>
+        <item quantity="other">Stopped %1$d cameras</item>
+    </plurals>
+    <string name="cameras_message_failed">Something went wrong. Try again.</string>
+</resources>

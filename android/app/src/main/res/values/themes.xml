@@ -2,5 +2,7 @@
 <!-- In the name of God, the Most Gracious, the Most Merciful -->
 <resources>
 
-    <style name="Theme.Herz" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Herz" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/herz_background</item>
+    </style>
 </resources>

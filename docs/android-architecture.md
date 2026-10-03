@@ -43,11 +43,27 @@ The task list lives in [android-todo.md](android-todo.md).
 
 | Interface in `:core:domain` / `:core:video` | Production impl | Dev / test impl |
 | --- | --- | --- |
-| `CameraSource` | `ServerCameraSource` in `:core:data` | `DirectLanCameraSource` in `:camera:onvif`, `FakeCameraSource` in `:core:testing` |
-| `CameraDiscovery` | none (server knows cameras) | `OnvifCameraDiscovery` in `:camera:discovery`, fake in `:core:testing` |
-| `CameraConnector` | none | `OnvifCameraConnector` in `:camera:onvif` |
-| `ActiveCamerasRepository`, `DoorRepository`, `AlarmRepository`, ... | `:core:data` | fakes in `:core:testing` |
-| `VideoPlayerFactory` | `WebRtcPlayer` in `:core:video-webrtc` | `RtspPlayer` in `:core:video-rtsp`, `FakeVideoPlayer` in `:core:testing` |
+| `CameraSource` | `ServerCameraSource` in `:core:data` | `DirectLanCameraSource` in `:core:data`, `FakeCameraSource` in `:core:testing` |
+| `CameraRepository` | `:core:data` (server sync later) | `OfflineFirstCameraRepository` in `:core:data`, fake in `:core:testing` |
+| `CameraDiscovery` | none (server knows cameras) | `LanCameraDiscovery` in `:camera:discovery`, fake in `:core:testing` |
+| `CameraConnector` | none | `RtspCameraConnector` in `:camera:onvif`, fake in `:core:testing` |
+| `NetworkMonitor` | `ConnectivityNetworkMonitor` in `:core:network` | fake in `:core:testing` |
+| `ActiveCamerasRepository`, `DoorRepository`, `AlarmRepository`, ... | `:core:data` (`LocalActiveCamerasRepository` until the server exists) | fakes in `:core:testing` |
+| `VideoPlayerFactory` | `WebRtcPlayer` in `:core:video-webrtc` | `Media3RtspPlayer` in `:core:video-rtsp`, `FakeVideoPlayer` in `:core:testing` |
+
+`DirectLanCameraSource` sits in `:core:data` because it only reads saved cameras and their encrypted passwords from Room.
+
+### No cleartext to cameras
+
+The security rules forbid cleartext traffic, and ONVIF SOAP runs over plain HTTP. So the direct-LAN path does not use ONVIF SOAP:
+
+- Discovery sends a WS-Discovery probe over UDP multicast (with a `MulticastLock`) and scans the local /24 for TCP ports 554 and 8554.
+- Connecting sends RTSP `DESCRIBE` requests with Digest or Basic auth and tries a catalogue of brand stream paths. The user can also enter an RTSP URL by hand.
+- Stream URIs are stored without credentials. Passwords are encrypted with an AndroidKeyStore AES-GCM key.
+
+Enabling ONVIF SOAP (profiles, snapshots, PTZ) needs an explicit decision, for example only in the `dev` flavor.
+
+On Android 17 (targetSdk 37) LAN access needs the runtime permission `ACCESS_LOCAL_NETWORK`. `:app` requests it.
 | `TokenStore`, `DeviceKeyStore` | `:core:security` | fake in `:core:testing` |
 
 `CameraDiscovery` and `CameraConnector` sit in `:core:domain`, not in `:camera:*` as the camera plan sketched. Otherwise `:feature:discovery` would have to depend on a non-core module.
@@ -60,38 +76,38 @@ Status: **Empty** = build file only. **Started** = some code. **Done** = done wi
 
 | Module | Holds | May depend on | Status |
 | --- | --- | --- | --- |
-| `:core:model` | `Camera`, `ActiveCamera`, `SessionSource`, `StreamState`, `StreamProfile`, `DiscoveredDevice`, `Door`, `Alarm`, `Node`, `User`, `Role`, `NetworkMode` | nothing | Empty |
-| `:core:common` | `AppResult`, dispatcher qualifiers, `@AppScope`, time source | nothing | Empty |
-| `:core:domain` | Repository and source interfaces, use cases (`ObserveActiveCameras`, `StartCamera`, `StopCamera`, `OpenDoor`, `AcknowledgeAlarm`, ...), `liveBudget`, sorting rules | `:core:model`, `:core:common` (api) | Empty |
+| `:core:model` | `Camera`, `ActiveCamera`, `SessionSource`, `StreamState`, `StreamProfile`, `DiscoveredDevice`, `Door`, `Alarm`, `Node`, `User`, `Role`, `NetworkMode` | nothing | Started (camera types) |
+| `:core:common` | `AppResult`, dispatcher qualifiers, `@AppScope`, time source | nothing | Done |
+| `:core:domain` | Repository and source interfaces, use cases (`ObserveActiveCameras`, `StartCamera`, `StopCamera`, `OpenDoor`, `AcknowledgeAlarm`, ...), `liveBudget`, sorting rules | `:core:model`, `:core:common` (api) | Started (camera use cases) |
 
 ### Android core (`herz.android.library`, Compose ones marked)
 
 | Module | Holds | May depend on | Status |
 | --- | --- | --- | --- |
-| `:core:data` | Repository impls, `EventStream` router, `ServerCameraSource`, sync workers (D14) | domain, model, common, network, database, datastore | Empty |
-| `:core:network` | Retrofit APIs, OkHttp, WebSocket, `CertificatePinner`, auth interceptor, token refresh, `NetworkMonitor` | model, common, security | Empty |
-| `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Empty |
+| `:core:data` | Repository impls, `EventStream` router, `ServerCameraSource`, sync workers (D14) | domain, model, common, network, database, datastore, security | Started (local camera repositories, `DirectLanCameraSource`) |
+| `:core:network` | Retrofit APIs, OkHttp, WebSocket, `CertificatePinner`, auth interceptor, token refresh, `NetworkMonitor` | model, common, domain, security | Started (`NetworkMonitor` only) |
+| `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Started (cameras, active sessions) |
 | `:core:datastore` | DataStore settings: tile limits, stream quality, player choice | model, common | Empty |
-| `:core:security` | `TokenStore` (Tink + Keystore), `DeviceKey`, `BiometricSigner` exactly as spec D11, encrypted camera passwords | common | Empty |
+| `:core:security` | `TokenStore` (Tink + Keystore), `DeviceKey`, `BiometricSigner` exactly as spec D11, encrypted camera passwords | common | Started (camera password cipher) |
 | `:core:notifications` | FCM service, channels, `AlarmNotifier`, full-screen intent, dedupe | domain, model, common | Empty |
-| `:core:designsystem` (Compose) | `HerzTheme`, colors, type, `CameraTile` frame, `StatusBadge`, `HoldToConfirmButton` | nothing | Empty |
-| `:core:ui` (Compose) | Loading, empty, error, offline states, shared adaptive helpers | designsystem (api), model | Empty |
-| `:core:testing` (Compose) | Fakes for every domain interface, `FakeVideoPlayer`, `MainDispatcherRule`, Turbine helpers | domain, model, common, video (api) | Empty |
+| `:core:designsystem` (Compose) | `HerzTheme`, colors, type, `CameraTile` frame, `StatusBadge`, `HoldToConfirmButton` | nothing | Started (theme, `StatusBadge`, icons) |
+| `:core:ui` (Compose) | Loading, empty, error, offline states, shared adaptive helpers | designsystem (api), model | Started (message and loading states) |
+| `:core:testing` (Compose) | Fakes for every domain interface, `FakeVideoPlayer`, `MainDispatcherRule`, Turbine helpers | domain, model, common, video (api) | Started (camera fakes) |
 
 ### Video (Compose)
 
 | Module | Holds | May depend on | Status |
 | --- | --- | --- | --- |
-| `:core:video` | `VideoPlayer`, `PlayerState`, `StreamQuality`, `VideoPlayerFactory`, `PlayerPool`, `SnapshotPlayer` | model, common | Empty |
-| `:core:video-rtsp` | `RtspPlayer` on Media3. Later a second impl on rtsp-client-android (camera plan step 6) | video, model, common | Empty |
+| `:core:video` | `VideoPlayer`, `PlayerState`, `StreamQuality`, `VideoPlayerFactory`, `PlayerPool`, `SnapshotPlayer` | model, common | Started (no `SnapshotPlayer` yet) |
+| `:core:video-rtsp` | `RtspPlayer` on Media3. Later a second impl on rtsp-client-android (camera plan step 6) | video, model, common | Done (Media3) |
 | `:core:video-webrtc` | `WebRtcPlayer` on stream-webrtc-android, SDP exchange with the server | video, model, common, network | Empty |
 
 ### Direct LAN cameras (dev only, `herz.android.library`)
 
 | Module | Holds | May depend on | Status |
 | --- | --- | --- | --- |
-| `:camera:discovery` | `OnvifCameraDiscovery`: WS-Discovery, `MulticastLock`, timeout. Later a subnet scan for port 554 | domain, model, common | Empty |
-| `:camera:onvif` | `OnvifCameraConnector`, profiles, stream and snapshot URLs, `DirectLanCameraSource`. Later PTZ | domain, model, common | Empty |
+| `:camera:discovery` | `LanCameraDiscovery`: WS-Discovery, `MulticastLock`, timeout, /24 scan for RTSP ports 554 and 8554 | domain, model, common | Done |
+| `:camera:onvif` | `RtspCameraConnector`: RTSP probe, Digest/Basic auth, brand stream paths, add by RTSP URL. Later ONVIF profiles, snapshots, PTZ | domain, model, common | Started (RTSP only, see "No cleartext to cameras") |
 
 ### Features (`herz.android.feature`)
 
@@ -99,9 +115,9 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 
 | Module | Screens | Extra deps | Status |
 | --- | --- | --- | --- |
-| `:feature:liveview` | Active Cameras grid, maximize, swipe, Back (spec D10) | `:core:video` | Empty |
-| `:feature:cameras` | Camera list, Start/Stop, multi-select, camera settings | | Empty |
-| `:feature:discovery` | Find cameras, enter login, test, save (dev) | | Empty |
+| `:feature:liveview` | Active Cameras grid, maximize, swipe, Back (spec D10) | `:core:video` | Started (no alarm banner yet) |
+| `:feature:cameras` | Camera list, Start/Stop, multi-select, camera settings | | Done |
+| `:feature:discovery` | Find cameras, enter login, test, save (dev) | | Done |
 | `:feature:auth` | Login, TOTP, device registration | | Empty |
 | `:feature:dashboard` | Alarms, doors, node health summary | | Empty |
 | `:feature:alarms` | Full-screen alarm, list, acknowledge | | Empty |
@@ -119,7 +135,7 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 
 | Module | Holds | Status |
 | --- | --- | --- |
-| `:app` | `HerzApplication`, `MainActivity`, NavHost, bottom bar / rail, Hilt bindings that pick implementations per flavor | Started (template `Hello Android!`, depends on all modules) |
+| `:app` | `HerzApplication`, `MainActivity`, NavHost, bottom bar / rail, Hilt bindings that pick implementations per flavor | Started (Hilt root, NavHost with Cameras and Live, bottom bar / rail, local network permission. No flavors yet) |
 
 ## 4. Inside a feature module
 
@@ -148,7 +164,10 @@ Tests sit in `src/test/` and use fakes from `:core:testing`. They never use mock
 
 Namespace is derived from the Gradle path: `:core:video-rtsp` becomes `com.raghim.herz.core.video.rtsp`. The application id stays `com.raghim.herz`.
 
-Plugins still to add, when the first module needs them: `herz.hilt` (Hilt + KSP), `herz.android.room`, `herz.kotlin.serialization`, `herz.android.application` (flavors `dev` / `prod`, moves `:app` config into build-logic).
+| `herz.hilt` | KSP + Hilt, `hilt-android`, `hilt-compiler` | data, database, network, security, video*, camera, features, app |
+| `herz.android.room` | Room + KSP, schemas exported to `schemas/` | database |
+
+Plugins still to add: `herz.kotlin.serialization`, `herz.android.application` (flavors `dev` / `prod`, moves `:app` config into build-logic).
 
 ## 6. Flavors (planned)
 

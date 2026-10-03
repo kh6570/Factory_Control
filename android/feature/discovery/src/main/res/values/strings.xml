@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="discovery_title">Add camera</string>
+    <string name="discovery_back">Back</string>
+    <string name="discovery_rescan">Search again</string>
+    <string name="discovery_searching">Searching your network…</string>
+    <string name="discovery_found_header">Found on this network</string>
+    <string name="discovery_method_onvif">ONVIF</string>
+    <string name="discovery_method_rtsp_port">RTSP port</string>
+    <string name="discovery_added">Added</string>
+    <string name="discovery_nothing_found_title">No cameras found</string>
+    <string name="discovery_help_same_wifi">Make sure this phone is on the same Wi-Fi as the cameras.</string>
+    <string name="discovery_help_enable_onvif">Some cameras only work after you turn on ONVIF or RTSP in their own app. Tapo cameras, for example, need a camera account set up in the Tapo app.</string>
+    <string name="discovery_help_emulator">The Android emulator cannot discover cameras. Add the camera by hand instead, for example rtsp://10.0.2.2:8554/cam01 for go2rtc.</string>
+    <string name="discovery_manual_header">Add by hand</string>
+    <string name="discovery_enter_ip">Enter IP address</string>
+    <string name="discovery_enter_rtsp_url">Enter RTSP URL</string>
+
+    <string name="discovery_form_ip_title">Camera by IP address</string>
+    <string name="discovery_form_url_title">Camera by RTSP URL</string>
+    <string name="discovery_field_host">IP address</string>
+    <string name="discovery_field_host_hint">192.168.1.20</string>
+    <string name="discovery_field_port">RTSP port</string>
+    <string name="discovery_field_main_url">Main stream URL</string>
+    <string name="discovery_field_main_url_hint">rtsp://192.168.1.20:554/stream1</string>
+    <string name="discovery_field_sub_url">Sub stream URL (optional)</string>
+    <string name="discovery_field_sub_url_help">A lower quality stream for the live wall</string>
+    <string name="discovery_field_name">Name</string>
+    <string name="discovery_field_username">Username</string>
+    <string name="discovery_field_password">Password</string>
+    <string name="discovery_show_password">Show</string>
+    <string name="discovery_hide_password">Hide</string>
+    <string name="discovery_login_help">Leave empty if the camera has no login.</string>
+    <string name="discovery_test_and_save">Test and save</string>
+    <string name="discovery_testing">Testing connection…</string>
+
+    <string name="discovery_error_host_required">Enter the camera\'s IP address</string>
+    <string name="discovery_error_invalid_host">Enter only the IP address or host name, for example 192.168.1.20</string>
+    <string name="discovery_error_invalid_port">Port must be between 1 and 65535</string>
+    <string name="discovery_error_invalid_url">URL must start with rtsp:// or rtsps://</string>
+    <string name="discovery_error_credentials_in_url">Remove the login from the URL and use the username and password fields</string>
+    <string name="discovery_error_wrong_login">Wrong username or password</string>
+    <string name="discovery_error_login_required">This camera needs a login</string>
+    <string name="discovery_error_unreachable">Camera not reachable. Is the phone on the same Wi-Fi?</string>
+    <string name="discovery_error_no_stream">Connected, but no video stream found. Try Add by RTSP URL.</string>
+    <string name="discovery_error_timeout">The camera took too long to answer. Try again.</string>
+    <string name="discovery_error_offline">This phone has no network. Connect to Wi-Fi and try again.</string>
+    <string name="discovery_error_unknown">Could not connect to the camera. Try again.</string>
+</resources>

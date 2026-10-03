@@ -9,6 +9,7 @@ dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
+    compileOnly(libs.room.gradlePlugin)
 }
 
 gradlePlugin {
@@ -28,6 +29,14 @@ gradlePlugin {
         register("jvmLibrary") {
             id = "herz.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
+        }
+        register("hilt") {
+            id = "herz.hilt"
+            implementationClass = "HiltConventionPlugin"
+        }
+        register("androidRoom") {
+            id = "herz.android.room"
+            implementationClass = "AndroidRoomConventionPlugin"
         }
     }
 }

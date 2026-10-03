@@ -12,32 +12,37 @@ Rules for every task: one module or one feature per task, unit tests for every V
 - [x] `build-logic` convention plugins: `herz.jvm.library`, `herz.android.library`, `herz.android.library.compose`, `herz.android.feature`
 - [x] Empty modules for the full graph, wired into `:app`
 - [x] Build check: a feature may not depend on another feature
-- [ ] Commit the skeleton
+- [x] Commit the skeleton
 - [ ] `herz.android.application` convention plugin, flavors `dev` and `prod`. Switch workflow to `testDevDebugUnitTest` / `assembleDevDebug`
 - [ ] Move `:camera:*` and `:feature:discovery` to `devImplementation`
-- [ ] `herz.hilt` plugin (Hilt + KSP), `HerzApplication` with `@HiltAndroidApp`
-- [ ] Add to the catalog: coroutines, lifecycle-viewmodel-compose, navigation-compose, kotlinx-serialization, Turbine, coroutines-test
+- [x] `herz.hilt` plugin (Hilt + KSP), `HerzApplication` with `@HiltAndroidApp`
+- [x] Add to the catalog: coroutines, lifecycle-viewmodel-compose, navigation-compose, kotlinx-serialization, Turbine, coroutines-test
 - [ ] CI: ktlint + detekt, unit tests, lint, assemble (spec D17)
 
 ## Phase 1: Camera slice on fake data (emulator)
 
 Camera plan steps 2 and 3. All of it runs on the emulator.
 
-- [ ] `:core:model`: `Camera`, `ActiveCamera`, `SessionSource`, `StreamState`, `StreamProfile`, `StreamQuality`, `DiscoveredDevice`, `NetworkMode`
-- [ ] `:core:common`: `AppResult`, dispatcher qualifiers, `@AppScope`
-- [ ] `:core:domain`: `CameraSource`, `CameraDiscovery`, `CameraConnector`, `ActiveCamerasRepository`; use cases `ObserveActiveCameras`, `StartCamera`, `StopCamera`, `ObserveNetworkMode`; `liveBudget()` and alarm-first sorting with tests
-- [ ] `:core:video`: `VideoPlayer`, `PlayerState`, `VideoPlayerFactory`, `PlayerPool` with tests
-- [ ] `:core:testing`: fakes for every interface above, `FakeVideoPlayer`, `MainDispatcherRule`. Dev flavor data: 6 fake cameras, 2 offline
-- [ ] `:core:designsystem`: move `HerzTheme` out of `:app`, `CameraTile` frame, `StatusBadge`
-- [ ] `:core:ui`: loading, empty, error, offline composables
-- [ ] `:feature:liveview`: adaptive grid (columns per system-design 6.3 table), tap to maximize, `HorizontalPager` swipe, Back to grid with the same scroll position, per-tile error and reconnect overlay, `SavedStateHandle` for the maximized id. ViewModel tests with Turbine. `gridColumns` tests
-- [ ] `:feature:cameras`: list with Off / Starting / Live / Offline, Start/Stop, multi-select, "Show Active Cameras (N)"
-- [ ] `:app`: type-safe NavHost, bottom bar on phone, rail on tablet (Dashboard, Cameras, Live (N), Doors, Alarms)
+- [x] `:core:model`: `Camera`, `ActiveCamera`, `SessionSource`, `StreamState`, `StreamQuality`, `DiscoveredDevice`, `NetworkMode`
+- [ ] `:core:model`: `StreamProfile`
+- [x] `:core:common`: `AppResult`, dispatcher qualifiers, `@AppScope`
+- [x] `:core:domain`: `CameraSource`, `CameraDiscovery`, `CameraConnector`, `ActiveCamerasRepository`; use cases `ObserveActiveCameras`, `StartCamera`, `StopCamera`, `ObserveNetworkMode`; `liveBudget()` and alarm-first sorting with tests
+- [x] `:core:video`: `VideoPlayer`, `PlayerState`, `VideoPlayerFactory`, `PlayerPool`
+- [x] `:core:testing`: fakes for every interface above, `FakeVideoPlayer`, `MainDispatcherRule`
+- [ ] `:core:testing`: dev flavor data, 6 fake cameras, 2 offline (waits for flavors)
+- [x] `:core:designsystem`: move `HerzTheme` out of `:app`, `StatusBadge`
+- [ ] `:core:designsystem`: shared `CameraTile` frame (the tile lives in `:feature:liveview` for now)
+- [x] `:core:ui`: loading, empty, error composables
+- [x] `:feature:liveview`: adaptive grid (columns per system-design 6.3 table), tap to maximize, `HorizontalPager` swipe, Back to grid with the same scroll position, per-tile error and reconnect overlay, `SavedStateHandle` for the maximized id. ViewModel tests with Turbine. `gridColumns` tests
+- [x] `:feature:cameras`: list with Off / Starting / Live / Offline, Start/Stop, multi-select, "Show Active Cameras (N)"
+- [x] `:app`: type-safe NavHost, bottom bar on phone, rail on tablet (Cameras, Live (N) for now; Dashboard, Doors, Alarms come with their features)
 
 ## Phase 2: Real video
 
-- [ ] `:core:video-rtsp`: `RtspPlayer` on Media3. Sub stream in grid, main stream when maximized, keep last frame during the switch, release off-screen players (camera plan step 4)
-- [ ] Live-tile budget per network mode, `SnapshotPlayer` beyond the budget (spec D9)
+- [x] `:core:video-rtsp`: `RtspPlayer` on Media3. Sub stream in grid, main stream when maximized, release off-screen players (camera plan step 4)
+- [ ] Check on a device that the last frame stays visible during the sub to main stream switch
+- [x] Live-tile budget per network mode
+- [ ] `SnapshotPlayer` beyond the budget (spec D9)
 - [ ] `:core:datastore`: tile limits, stream quality, player choice
 - [ ] Test against go2rtc from the emulator: `rtsp://10.0.2.2:8554/cam01`
 - [ ] Second RTSP impl on rtsp-client-android behind the same interface, setting to switch (camera plan step 6). Keep the better one
@@ -46,17 +51,20 @@ Camera plan steps 2 and 3. All of it runs on the emulator.
 
 Camera plan step 5. Needs a real phone on the cameras' Wi-Fi.
 
-- [ ] `:camera:discovery`: ONVIF WS-Discovery with ONVIF-Camera-Kotlin, `MulticastLock`, `CHANGE_WIFI_MULTICAST_STATE`, timeout
-- [ ] `:camera:onvif`: connect, profiles, stream and snapshot URLs, `DirectLanCameraSource`, brand RTSP path fallback, add by RTSP URL
-- [ ] `:core:database`: Room setup (`herz.android.room` plugin), saved LAN cameras
-- [ ] `:core:security`: camera passwords encrypted with Keystore
-- [ ] `:feature:discovery`: scan list, enter login, test connection, save
+- [x] `:camera:discovery`: WS-Discovery (own codec, no ONVIF library), `MulticastLock`, `CHANGE_WIFI_MULTICAST_STATE`, timeout, /24 RTSP port scan
+- [x] `:camera:onvif`: RTSP connect with Digest/Basic auth, brand RTSP path fallback, add by RTSP URL. `DirectLanCameraSource` lives in `:core:data`
+- [ ] `:camera:onvif`: ONVIF profiles, snapshot URLs. Needs a decision, because ONVIF SOAP is cleartext HTTP (see android-architecture.md, "No cleartext to cameras")
+- [x] `:core:database`: Room setup (`herz.android.room` plugin), saved LAN cameras, active sessions
+- [x] `:core:security`: camera passwords encrypted with Keystore
+- [x] `:feature:discovery`: scan list, enter login, test connection, save
+- [x] `:app`: request `ACCESS_LOCAL_NETWORK` on Android 17
+- [ ] Test discovery and playback on a real phone on the cameras' Wi-Fi
 
 ## Phase 4: Server connection
 
 - [ ] `:core:security`: `TokenStore` (DataStore + Tink, AEAD key in Keystore)
 - [ ] `:core:network`: Retrofit + kotlinx.serialization, OkHttp with `CertificatePinner`, no cleartext, auth interceptor, single-flight token refresh, `X-App-Version`, no secrets in logs (spec D8)
-- [ ] `:core:network`: `NetworkMonitor` giving LAN / REMOTE_VPN / CELLULAR / OFFLINE
+- [x] `:core:network`: `NetworkMonitor` giving LAN / REMOTE_VPN / CELLULAR / OFFLINE
 - [ ] `:core:data`: `EventStream` WebSocket with backoff, foreground only, re-fetch snapshots after reconnect (spec D7, B11 events)
 - [ ] `:core:data`: `ActiveCamerasRepositoryImpl`, `ServerCameraSource` (REST `/sessions/active`, start/stop, WS session events)
 - [ ] `:core:database`: cameras, doors, nodes, alarms cache

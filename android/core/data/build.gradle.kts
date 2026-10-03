@@ -1,6 +1,7 @@
 // In the name of God, the Most Gracious, the Most Merciful
 plugins {
     alias(libs.plugins.herz.android.library)
+    alias(libs.plugins.herz.hilt)
 }
 
 dependencies {
@@ -10,4 +11,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:database"))
     implementation(project(":core:datastore"))
+    implementation(project(":core:security"))
+
+    testImplementation(project(":core:testing"))
 }

@@ -11,6 +11,16 @@ fun gridColumns(count: Int, wide: Boolean): Int = when {
     else -> if (wide) 4 else 3
 }
 
+/**
+ * Columns actually used. [chosen] is the user's pick (1 to 4); null keeps [gridColumns].
+ * The result never exceeds [count], so 2 cameras with a choice of 4 still sit on one row.
+ */
+fun resolvedGridColumns(count: Int, chosen: Int?, wide: Boolean): Int {
+    if (count <= 0) return 1
+    val wanted = chosen ?: return gridColumns(count, wide)
+    return wanted.coerceIn(1, count)
+}
+
 internal const val TILE_ASPECT_RATIO = 16f / 9f
 
 /** Narrowest grid, as a share of the available width, before we scroll instead of shrinking. */

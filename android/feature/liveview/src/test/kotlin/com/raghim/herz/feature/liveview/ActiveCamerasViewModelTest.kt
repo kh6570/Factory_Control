@@ -6,11 +6,14 @@ import androidx.lifecycle.SavedStateHandle
 import com.raghim.herz.core.domain.camera.NetworkMonitor
 import com.raghim.herz.core.domain.camera.ObserveActiveCamerasUseCase
 import com.raghim.herz.core.domain.camera.ObserveNetworkModeUseCase
+import com.raghim.herz.core.domain.door.ObserveLiveGridColumnsUseCase
+import com.raghim.herz.core.domain.door.SetLiveGridColumnsUseCase
 import com.raghim.herz.core.model.NetworkMode
 import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
 import com.raghim.herz.core.testing.FakeActiveCamerasRepository
 import com.raghim.herz.core.testing.FakeNetworkMonitor
+import com.raghim.herz.core.testing.FakeUserSettingsRepository
 import com.raghim.herz.core.testing.FakeVideoPlayer
 import com.raghim.herz.core.testing.FakeVideoPlayerFactory
 import com.raghim.herz.core.testing.MainDispatcherRule
@@ -42,6 +45,7 @@ class ActiveCamerasViewModelTest {
     private val network = FakeNetworkMonitor(NetworkMode.LAN)
     private val factory = FakeVideoPlayerFactory()
     private val pool = PlayerPool(factory)
+    private val settings = FakeUserSettingsRepository()
 
     private fun viewModel(
         savedState: SavedStateHandle = SavedStateHandle(),
@@ -49,6 +53,8 @@ class ActiveCamerasViewModelTest {
     ) = ActiveCamerasViewModel(
         observeActiveCameras = ObserveActiveCamerasUseCase(repository),
         observeNetworkMode = ObserveNetworkModeUseCase(monitor),
+        observeLiveGridColumns = ObserveLiveGridColumnsUseCase(settings),
+        setLiveGridColumns = SetLiveGridColumnsUseCase(settings),
         pool = pool,
         savedState = savedState,
     )
@@ -188,6 +194,19 @@ class ActiveCamerasViewModelTest {
         assertTrue(fake("cam01").released)
         assertFalse(fake("cam02").released)
         assertEquals(1, pool.size)
+    }
+
+    @Test
+    fun `grid column choice is saved`() = runTest {
+        val vm = viewModel()
+        subscribe(vm)
+
+        vm.onIntent(ActiveCamerasIntent.SetGridColumns(4))
+        assertEquals(4, vm.state.value.gridColumns)
+        assertEquals(4, settings.gridColumns.value)
+
+        vm.onIntent(ActiveCamerasIntent.SetGridColumns(null))
+        assertEquals(null, vm.state.value.gridColumns)
     }
 
     @Test

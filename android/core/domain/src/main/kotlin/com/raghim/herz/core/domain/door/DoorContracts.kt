@@ -57,6 +57,19 @@ interface UserSettingsRepository {
     val requireFingerprint: Flow<Boolean>
 
     suspend fun setRequireFingerprint(required: Boolean)
+
+    /** Columns per row on the live wall. Null means the app chooses from the screen size. */
+    val liveGridColumns: Flow<Int?>
+
+    suspend fun setLiveGridColumns(columns: Int?)
+}
+
+object LiveGridColumns {
+    const val MIN = 1
+    const val MAX = 4
+
+    /** Keeps 1 to 4. Anything else, including null, means automatic. */
+    fun normalize(columns: Int?): Int? = columns?.takeIf { it in MIN..MAX }
 }
 
 object HoldToOpen {

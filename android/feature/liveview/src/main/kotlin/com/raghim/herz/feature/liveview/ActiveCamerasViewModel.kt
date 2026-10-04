@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.raghim.herz.core.domain.camera.ObserveActiveCamerasUseCase
 import com.raghim.herz.core.domain.camera.ObserveNetworkModeUseCase
 import com.raghim.herz.core.domain.camera.liveBudget
+import com.raghim.herz.core.domain.door.ObserveLiveGridColumnsUseCase
+import com.raghim.herz.core.domain.door.SetLiveGridColumnsUseCase
 import com.raghim.herz.core.model.ActiveCamera
 import com.raghim.herz.core.model.NetworkMode
 import com.raghim.herz.core.model.StreamQuality
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ActiveCamerasUiState(
@@ -28,6 +31,8 @@ data class ActiveCamerasUiState(
     /** Null = grid view. */
     val maximizedCameraId: String? = null,
     val networkMode: NetworkMode = NetworkMode.LAN,
+    /** Null = the app picks the column count. Otherwise 1 to 4 per row. */
+    val gridColumns: Int? = null,
     val isLoading: Boolean = true,
 )
 
@@ -36,6 +41,7 @@ sealed interface ActiveCamerasIntent {
     data object Minimize : ActiveCamerasIntent
     data class SwipeTo(val cameraId: String) : ActiveCamerasIntent
     data class Retry(val cameraId: String) : ActiveCamerasIntent
+    data class SetGridColumns(val columns: Int?) : ActiveCamerasIntent
 }
 
 /** Active Cameras wall (spec D10). Maximize is UI state, not a new screen, so players stay alive. */
@@ -43,6 +49,8 @@ sealed interface ActiveCamerasIntent {
 class ActiveCamerasViewModel @Inject constructor(
     observeActiveCameras: ObserveActiveCamerasUseCase,
     observeNetworkMode: ObserveNetworkModeUseCase,
+    observeLiveGridColumns: ObserveLiveGridColumnsUseCase,
+    private val setLiveGridColumns: SetLiveGridColumnsUseCase,
     private val pool: PlayerPool,
     private val savedState: SavedStateHandle,
 ) : ViewModel() {
@@ -54,7 +62,8 @@ class ActiveCamerasViewModel @Inject constructor(
         observeActiveCameras().onEach(::onTilesChanged),
         observeNetworkMode(),
         maximized,
-    ) { tiles, mode, max ->
+        observeLiveGridColumns(),
+    ) { tiles, mode, max, columns ->
         val maxId = max?.takeIf { id -> tiles.any { it.cameraId == id } }
         val liveIds = buildSet {
             tiles.take(liveBudget(mode)).forEach { add(it.cameraId) }
@@ -65,6 +74,7 @@ class ActiveCamerasViewModel @Inject constructor(
             liveIds = liveIds,
             maximizedCameraId = maxId,
             networkMode = mode,
+            gridColumns = columns,
             isLoading = false,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActiveCamerasUiState())
@@ -89,6 +99,7 @@ class ActiveCamerasViewModel @Inject constructor(
                 savedState[KEY_MAXIMIZED] = intent.cameraId
             }
             is ActiveCamerasIntent.Retry -> pool.get(intent.cameraId).retry()
+            is ActiveCamerasIntent.SetGridColumns -> viewModelScope.launch { setLiveGridColumns(intent.columns) }
         }
     }
 

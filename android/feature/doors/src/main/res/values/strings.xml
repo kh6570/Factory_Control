@@ -4,6 +4,8 @@
     <string name="doors_title">Doors</string>
     <string name="doors_settings">Door settings</string>
     <string name="doors_show_on_live">Show on Live</string>
+    <string name="doors_select_all">Select all</string>
+    <string name="doors_deselect_all">Deselect all</string>
     <string name="doors_section_on_live">On the Live panel</string>
     <string name="doors_section_available">Not on Live yet</string>
     <string name="doors_hint">Turn on Show on Live for the doors you want in the panel while watching cameras.</string>

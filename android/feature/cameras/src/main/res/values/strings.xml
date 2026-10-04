@@ -6,6 +6,8 @@
     <string name="cameras_section_on_live">On the Live wall</string>
     <string name="cameras_section_available">Not on Live yet</string>
     <string name="cameras_show_on_live">Show on Live</string>
+    <string name="cameras_select_all">Select all</string>
+    <string name="cameras_deselect_all">Deselect all</string>
     <string name="cameras_selected_count">%1$d selected</string>
     <string name="cameras_clear_selection">Clear selection</string>
     <string name="cameras_start_selected">Start selected</string>

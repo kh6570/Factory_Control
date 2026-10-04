@@ -3,6 +3,7 @@ package com.raghim.herz.core.data.settings
 
 import com.raghim.herz.core.datastore.UserPreferencesDataSource
 import com.raghim.herz.core.domain.door.HoldToOpen
+import com.raghim.herz.core.domain.door.LiveGridColumns
 import com.raghim.herz.core.domain.door.UserSettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,5 +27,12 @@ internal class PreferencesUserSettingsRepository @Inject constructor(
 
     override suspend fun setRequireFingerprint(required: Boolean) {
         preferences.setRequireFingerprint(required)
+    }
+
+    override val liveGridColumns: Flow<Int?> = preferences.liveGridColumns.map(LiveGridColumns::normalize)
+
+    override suspend fun setLiveGridColumns(columns: Int?) {
+        val normalized = LiveGridColumns.normalize(columns)
+        preferences.setLiveGridColumns(normalized)
     }
 }

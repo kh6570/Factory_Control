@@ -21,6 +21,22 @@ class GridLayoutTest {
     }
 
     @Test
+    fun `a chosen column count wraps the remainder onto the next row`() {
+        assertEquals(4, resolvedGridColumns(count = 6, chosen = 4, wide = false))
+        assertEquals(2, (6 + 4 - 1) / 4)
+    }
+
+    @Test
+    fun `a chosen count never leaves empty columns when there are fewer cameras`() {
+        assertEquals(2, resolvedGridColumns(count = 2, chosen = 4, wide = false))
+    }
+
+    @Test
+    fun `no choice keeps the layout table`() {
+        assertEquals(gridColumns(6, wide = false), resolvedGridColumns(6, chosen = null, wide = false))
+    }
+
+    @Test
     fun `no cameras still gives one column`() {
         assertEquals(1, gridColumns(0, wide = false))
         assertEquals(1, gridColumns(0, wide = true))

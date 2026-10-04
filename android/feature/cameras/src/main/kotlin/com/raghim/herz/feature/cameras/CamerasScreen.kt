@@ -3,7 +3,9 @@ package com.raghim.herz.feature.cameras
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,9 +19,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -107,7 +111,14 @@ private fun CameraList(
                 text = stringResource(R.string.cameras_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            SelectAllRow(
+                allSelected = cameras.all { it.isActive },
+                noneSelected = cameras.none { it.isActive },
+                onSelectAll = { onIntent(CamerasIntent.ShowAllOnLive) },
+                onDeselectAll = { onIntent(CamerasIntent.HideAllFromLive) },
+                selectLabel = stringResource(R.string.cameras_select_all),
+                deselectLabel = stringResource(R.string.cameras_deselect_all),
             )
         }
         if (onLive.isNotEmpty()) {
@@ -118,6 +129,21 @@ private fun CameraList(
             item(key = "available_header") { SectionLabel(stringResource(R.string.cameras_section_available)) }
             items(available, key = { it.camera.id }) { overview -> CameraRow(overview, onIntent) }
         }
+    }
+}
+
+@Composable
+private fun SelectAllRow(
+    allSelected: Boolean,
+    noneSelected: Boolean,
+    onSelectAll: () -> Unit,
+    onDeselectAll: () -> Unit,
+    selectLabel: String,
+    deselectLabel: String,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        TextButton(onClick = onSelectAll, enabled = !allSelected) { Text(selectLabel) }
+        TextButton(onClick = onDeselectAll, enabled = !noneSelected) { Text(deselectLabel) }
     }
 }
 

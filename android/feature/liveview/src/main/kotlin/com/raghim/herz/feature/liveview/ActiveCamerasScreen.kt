@@ -19,10 +19,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
@@ -34,7 +39,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.raghim.herz.core.domain.door.LiveGridColumns
 import com.raghim.herz.core.model.NetworkMode
 import com.raghim.herz.core.ui.LoadingState
 import com.raghim.herz.core.ui.MessageState
@@ -96,6 +105,7 @@ internal fun ActiveCamerasScreen(
     val fullscreen = state.maximizedCameraId != null
     // Hoisted above AnimatedContent so Back from fullscreen returns to the same scroll position.
     val gridState = rememberLazyGridState()
+    var columnsOpen by rememberSaveable { mutableStateOf(false) }
     val onRetry: (String) -> Unit = { id -> onIntent(ActiveCamerasIntent.Retry(id)) }
 
     BackHandler(enabled = fullscreen) { onIntent(ActiveCamerasIntent.Minimize) }
@@ -114,6 +124,11 @@ internal fun ActiveCamerasScreen(
                                 stringResource(R.string.liveview_title_count, state.tiles.size)
                             },
                         )
+                    },
+                    actions = {
+                        IconButton(onClick = { columnsOpen = true }) {
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.liveview_settings))
+                        }
                     },
                 )
             }
@@ -164,6 +179,7 @@ internal fun ActiveCamerasScreen(
                                 tiles = state.tiles,
                                 liveIds = state.liveIds,
                                 gridState = gridState,
+                                chosenColumns = state.gridColumns,
                                 playbackEnabled = !fullscreen,
                                 player = player,
                                 onTap = { onIntent(ActiveCamerasIntent.Maximize(it)) },
@@ -175,6 +191,48 @@ internal fun ActiveCamerasScreen(
                 }
             }
         }
+    }
+    if (columnsOpen) {
+        GridColumnsDialog(
+            selected = state.gridColumns,
+            onSelect = { onIntent(ActiveCamerasIntent.SetGridColumns(it)) },
+            onDismiss = { columnsOpen = false },
+        )
+    }
+}
+
+@Composable
+private fun GridColumnsDialog(selected: Int?, onSelect: (Int?) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.liveview_columns_title)) },
+        text = {
+            Column {
+                GridColumnChoice(
+                    label = stringResource(R.string.liveview_columns_automatic),
+                    selected = selected == null,
+                    onClick = { onSelect(null) },
+                )
+                for (count in LiveGridColumns.MIN..LiveGridColumns.MAX) {
+                    GridColumnChoice(
+                        label = stringResource(R.string.liveview_columns_count, count),
+                        selected = selected == count,
+                        onClick = { onSelect(count) },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.liveview_done)) }
+        },
+    )
+}
+
+@Composable
+private fun GridColumnChoice(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        RadioButton(selected = selected, onClick = onClick)
+        Text(label, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

@@ -73,6 +73,18 @@ class ObserveRequireFingerprintUseCase @Inject constructor(
     operator fun invoke(): Flow<Boolean> = settings.requireFingerprint.distinctUntilChanged()
 }
 
+class ObserveLiveGridColumnsUseCase @Inject constructor(
+    private val settings: UserSettingsRepository,
+) {
+    operator fun invoke(): Flow<Int?> = settings.liveGridColumns.map(LiveGridColumns::normalize).distinctUntilChanged()
+}
+
+class SetLiveGridColumnsUseCase @Inject constructor(
+    private val settings: UserSettingsRepository,
+) {
+    suspend operator fun invoke(columns: Int?) = settings.setLiveGridColumns(LiveGridColumns.normalize(columns))
+}
+
 class SetRequireFingerprintUseCase @Inject constructor(
     private val settings: UserSettingsRepository,
 ) {

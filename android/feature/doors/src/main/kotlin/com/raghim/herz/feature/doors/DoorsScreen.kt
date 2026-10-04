@@ -150,7 +150,14 @@ private fun DoorList(doors: List<Door>, onIntent: (DoorsIntent) -> Unit, modifie
                 text = stringResource(R.string.doors_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            SelectAllRow(
+                allSelected = doors.all { it.onLivePanel },
+                noneSelected = doors.none { it.onLivePanel },
+                onSelectAll = { onIntent(DoorsIntent.ShowAllOnLive) },
+                onDeselectAll = { onIntent(DoorsIntent.HideAllFromLive) },
+                selectLabel = stringResource(R.string.doors_select_all),
+                deselectLabel = stringResource(R.string.doors_deselect_all),
             )
         }
         if (onLive.isNotEmpty()) {
@@ -161,6 +168,21 @@ private fun DoorList(doors: List<Door>, onIntent: (DoorsIntent) -> Unit, modifie
             item(key = "available_header") { SectionLabel(stringResource(R.string.doors_section_available)) }
             items(available, key = { it.id }) { door -> DoorCard(door, onIntent) }
         }
+    }
+}
+
+@Composable
+private fun SelectAllRow(
+    allSelected: Boolean,
+    noneSelected: Boolean,
+    onSelectAll: () -> Unit,
+    onDeselectAll: () -> Unit,
+    selectLabel: String,
+    deselectLabel: String,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        TextButton(onClick = onSelectAll, enabled = !allSelected) { Text(selectLabel) }
+        TextButton(onClick = onDeselectAll, enabled = !noneSelected) { Text(deselectLabel) }
     }
 }
 

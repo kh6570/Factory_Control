@@ -69,6 +69,8 @@ class CamerasViewModel @Inject constructor(
             CamerasIntent.ClearSelection -> _state.update { it.copy(selection = emptySet()) }
             CamerasIntent.StartSelected -> startSelected()
             CamerasIntent.StopSelected -> stopSelected()
+            CamerasIntent.ShowAllOnLive -> showAllOnLive()
+            CamerasIntent.HideAllFromLive -> hideAllFromLive()
             is CamerasIntent.RequestRename -> findCamera(intent.id)?.let { camera ->
                 _state.update { it.copy(dialog = CamerasDialog.Rename(camera.id, camera.name)) }
             }
@@ -99,6 +101,18 @@ class CamerasViewModel @Inject constructor(
             ids.forEach { stopCamera(it) }
             _effects.send(CamerasEffect.ShowMessage(CamerasMessage.Stopped(ids.size)))
         }
+    }
+
+    private fun showAllOnLive() {
+        val ids = _state.value.cameras.filter { !it.isActive }.map { it.camera.id }
+        if (ids.isEmpty()) return
+        perform { startCameras(ids) }
+    }
+
+    private fun hideAllFromLive() {
+        val ids = _state.value.cameras.filter { it.isActive }.map { it.camera.id }
+        if (ids.isEmpty()) return
+        perform { ids.forEach { stopCamera(it) } }
     }
 
     private fun confirmRename(name: String) {

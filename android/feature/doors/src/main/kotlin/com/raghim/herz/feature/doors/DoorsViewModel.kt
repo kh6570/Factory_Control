@@ -36,6 +36,8 @@ sealed interface DoorsIntent {
     data class Remove(val id: String) : DoorsIntent
     data class Save(val name: String, val area: String) : DoorsIntent
     data class SetOnLive(val id: String, val shown: Boolean) : DoorsIntent
+    data object ShowAllOnLive : DoorsIntent
+    data object HideAllFromLive : DoorsIntent
     data object ConfirmRemove : DoorsIntent
     data object Dismiss : DoorsIntent
 }
@@ -70,9 +72,17 @@ class DoorsViewModel @Inject constructor(
             }
             is DoorsIntent.Save -> save(intent.name, intent.area)
             is DoorsIntent.SetOnLive -> viewModelScope.launch { setOnLivePanel(intent.id, intent.shown) }
+            DoorsIntent.ShowAllOnLive -> setAllOnLive(shown = true)
+            DoorsIntent.HideAllFromLive -> setAllOnLive(shown = false)
             DoorsIntent.ConfirmRemove -> confirmRemove()
             DoorsIntent.Dismiss -> dialog.value = null
         }
+    }
+
+    private fun setAllOnLive(shown: Boolean) {
+        val ids = state.value.doors.filter { it.onLivePanel != shown }.map { it.id }
+        if (ids.isEmpty()) return
+        viewModelScope.launch { ids.forEach { setOnLivePanel(it, shown) } }
     }
 
     private fun save(name: String, area: String) {

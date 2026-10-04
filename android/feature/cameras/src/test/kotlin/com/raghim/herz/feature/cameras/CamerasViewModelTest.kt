@@ -159,4 +159,15 @@ class CamerasViewModelTest {
         assertTrue(state.selection.isEmpty())
         assertFalse(alpha.id in liveIds)
     }
+
+    @Test
+    fun `select all puts every camera on the wall and deselect all takes them off`() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.onIntent(CamerasIntent.ShowAllOnLive)
+        assertEquals(setOf(alpha.id, bravo.id, charlie.id), liveIds)
+
+        viewModel.onIntent(CamerasIntent.HideAllFromLive)
+        assertTrue(liveIds.isEmpty())
+    }
 }

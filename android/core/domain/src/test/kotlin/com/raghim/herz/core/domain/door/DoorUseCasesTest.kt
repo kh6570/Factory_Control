@@ -75,6 +75,8 @@ class DoorUseCasesTest {
         override suspend fun setRequireFingerprint(required: Boolean) {
             fingerprint.value = required
         }
+        override val liveGridColumns: Flow<Int?> = MutableStateFlow(null)
+        override suspend fun setLiveGridColumns(columns: Int?) = Unit
     }
 
     private class Signer(var result: AppResult<ByteArray> = AppResult.Success(byteArrayOf(7, 7))) : DoorCommandSigner {
@@ -192,6 +194,8 @@ class DoorUseCasesTest {
             }
             override val requireFingerprint: Flow<Boolean> = MutableStateFlow(true)
             override suspend fun setRequireFingerprint(required: Boolean) = Unit
+            override val liveGridColumns: Flow<Int?> = MutableStateFlow(null)
+            override suspend fun setLiveGridColumns(columns: Int?) = Unit
         }
 
         SetHoldToOpenUseCase(settings)(2600.milliseconds)

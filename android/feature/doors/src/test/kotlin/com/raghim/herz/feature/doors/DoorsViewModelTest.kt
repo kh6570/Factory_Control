@@ -109,4 +109,16 @@ class DoorsViewModelTest {
 
         assertEquals(2, repository.state.value.size)
     }
+
+    @Test
+    fun `select all shows every door on live and deselect all hides them`() = runTest {
+        val viewModel = viewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.state.collect() }
+
+        viewModel.onIntent(DoorsIntent.ShowAllOnLive)
+        assertTrue(repository.state.value.all { it.onLivePanel })
+
+        viewModel.onIntent(DoorsIntent.HideAllFromLive)
+        assertTrue(repository.state.value.none { it.onLivePanel })
+    }
 }

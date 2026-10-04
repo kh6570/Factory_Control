@@ -34,13 +34,14 @@ internal fun AdaptiveCameraGrid(
     tiles: List<ActiveCamera>,
     liveIds: Set<String>,
     gridState: LazyGridState,
+    /** Null lets the wall pick the column count from the screen size. */
+    chosenColumns: Int?,
     playbackEnabled: Boolean,
     player: (String) -> VideoPlayer,
     onTap: (String) -> Unit,
     onRetry: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -48,8 +49,8 @@ internal fun AdaptiveCameraGrid(
             .padding(TileGap),
         contentAlignment = Alignment.Center,
     ) {
-        val wide = landscape || maxWidth >= 600.dp
-        val columns = gridColumns(tiles.size, wide)
+        val wide = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE || maxWidth >= 600.dp
+        val columns = resolvedGridColumns(tiles.size, chosenColumns, wide)
         val gridWidth = fittedGridWidth(
             count = tiles.size,
             columns = columns,

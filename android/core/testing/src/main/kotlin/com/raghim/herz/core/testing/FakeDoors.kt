@@ -119,8 +119,10 @@ class FakeUserSettingsRepository(
 ) : UserSettingsRepository {
     val state = MutableStateFlow(holdToOpen)
     val fingerprint = MutableStateFlow(requireFingerprint)
+    val gridColumns = MutableStateFlow<Int?>(null)
     override val holdToOpen: Flow<Duration> = state
     override val requireFingerprint: Flow<Boolean> = fingerprint
+    override val liveGridColumns: Flow<Int?> = gridColumns
 
     override suspend fun setHoldToOpen(duration: Duration) {
         state.value = duration
@@ -128,5 +130,9 @@ class FakeUserSettingsRepository(
 
     override suspend fun setRequireFingerprint(required: Boolean) {
         fingerprint.value = required
+    }
+
+    override suspend fun setLiveGridColumns(columns: Int?) {
+        gridColumns.value = columns
     }
 }

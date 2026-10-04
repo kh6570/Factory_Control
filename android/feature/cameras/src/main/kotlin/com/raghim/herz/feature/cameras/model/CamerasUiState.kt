@@ -28,6 +28,8 @@ sealed interface CamerasIntent {
     data object ClearSelection : CamerasIntent
     data object StartSelected : CamerasIntent
     data object StopSelected : CamerasIntent
+    data object ShowAllOnLive : CamerasIntent
+    data object HideAllFromLive : CamerasIntent
     data class RequestRename(val id: String) : CamerasIntent
     data class ConfirmRename(val name: String) : CamerasIntent
     data class RequestRemove(val id: String) : CamerasIntent

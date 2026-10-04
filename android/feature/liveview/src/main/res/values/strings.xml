@@ -2,6 +2,11 @@
 <!-- In the name of God, the Most Gracious, the Most Merciful -->
 <resources>
     <string name="liveview_title">Live</string>
+    <string name="liveview_settings">Grid settings</string>
+    <string name="liveview_columns_title">Cameras per row</string>
+    <string name="liveview_columns_automatic">Automatic</string>
+    <string name="liveview_columns_count">%1$d per row</string>
+    <string name="liveview_done">Done</string>
     <string name="liveview_title_count">Live · %1$d</string>
     <string name="liveview_empty_title">No cameras on the wall</string>
     <string name="liveview_empty_body">Start cameras from the Cameras tab.</string>

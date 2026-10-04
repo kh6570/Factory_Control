@@ -1,6 +1,8 @@
 // In the name of God, the Most Gracious, the Most Merciful
 package com.raghim.herz.core.security.di
 
+import com.raghim.herz.core.domain.door.DoorCommandSigner
+import com.raghim.herz.core.security.BiometricDoorSigner
 import com.raghim.herz.core.security.CredentialCipher
 import com.raghim.herz.core.security.KeystoreCredentialCipher
 import dagger.Binds
@@ -15,4 +17,7 @@ internal abstract class SecurityModule {
     @Binds
     @Singleton
     abstract fun bindCredentialCipher(impl: KeystoreCredentialCipher): CredentialCipher
+
+    @Binds
+    abstract fun bindDoorCommandSigner(impl: BiometricDoorSigner): DoorCommandSigner
 }

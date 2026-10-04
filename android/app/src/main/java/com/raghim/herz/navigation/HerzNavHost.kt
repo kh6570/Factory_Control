@@ -14,6 +14,8 @@ import com.raghim.herz.feature.discovery.navigation.navigateToDiscovery
 import com.raghim.herz.feature.liveview.navigation.LiveViewRoute
 import com.raghim.herz.feature.liveview.navigation.liveViewScreen
 import com.raghim.herz.feature.liveview.navigation.navigateToLiveView
+import com.raghim.herz.feature.settings.navigation.navigateToSettings
+import com.raghim.herz.feature.settings.navigation.settingsScreen
 
 /** Features never call each other; every cross-feature jump is wired here. */
 @Composable
@@ -29,8 +31,10 @@ fun HerzNavHost(
     ) {
         liveViewScreen(
             onAddCameras = navController::navigateToDiscovery,
+            onOpenSettings = navController::navigateToSettings,
             onFullscreenChanged = onFullscreenChanged,
         )
+        settingsScreen(onBack = navController::popBackStack)
         camerasScreen(
             onAddCamera = navController::navigateToDiscovery,
             onOpenLive = { navController.navigateToTopLevel(TopLevelDestination.LIVE) },

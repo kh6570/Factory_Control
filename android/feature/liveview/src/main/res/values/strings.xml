@@ -32,4 +32,35 @@
     <string name="liveview_error_unsupported">This video format isn\'t supported.</string>
     <string name="liveview_error_lost">The connection was lost.</string>
     <string name="liveview_error_unknown">The video couldn\'t play.</string>
+
+    <string name="liveview_settings">Settings</string>
+
+    <string name="liveview_doors_title">Doors</string>
+    <plurals name="liveview_doors_count">
+        <item quantity="one">%1$d door</item>
+        <item quantity="other">%1$d doors</item>
+    </plurals>
+    <plurals name="liveview_doors_unlocked_count">
+        <item quantity="one">%1$d unlocked</item>
+        <item quantity="other">%1$d unlocked</item>
+    </plurals>
+    <string name="liveview_door_hold">Hold to open</string>
+    <string name="liveview_door_keep_holding">Keep holding…</string>
+    <string name="liveview_door_action_confirm">Confirm…</string>
+    <string name="liveview_door_status_locked">Locked</string>
+    <string name="liveview_door_status_locked_open">Locked, but door open</string>
+    <string name="liveview_door_status_confirm">Confirm with your fingerprint</string>
+    <string name="liveview_door_status_unlocking">Unlocking…</string>
+    <string name="liveview_door_status_unlocked">Unlocked</string>
+    <string name="liveview_door_status_unlocked_seconds">Unlocked · %1$d s</string>
+    <string name="liveview_door_status_open">Door open</string>
+    <string name="liveview_door_status_offline">Offline</string>
+
+    <string name="liveview_door_error_offline">%1$s is offline.</string>
+    <string name="liveview_door_error_unreachable">%1$s can\'t be reached. Try again.</string>
+    <string name="liveview_door_error_refused">%1$s refused the command.</string>
+    <string name="liveview_door_error_expired">The request for %1$s timed out. Try again.</string>
+    <string name="liveview_door_error_no_biometric">Set up a fingerprint in the phone settings to open doors. Android 11 or newer is needed.</string>
+    <string name="liveview_door_error_key_invalidated">Fingerprints changed, so the door key was reset. Register this phone again, then retry.</string>
+    <string name="liveview_door_error_unknown">%1$s couldn\'t be opened.</string>
 </resources>

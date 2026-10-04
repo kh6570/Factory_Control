@@ -194,5 +194,7 @@ internal fun AppError.toConnectError(loginGiven: Boolean): ConnectError = when (
     AppError.NoStreamFound -> ConnectError.NoStreamFound
     AppError.Timeout -> ConnectError.Timeout
     AppError.Offline -> ConnectError.Offline
-    is AppError.Unknown -> ConnectError.Unknown
+    AppError.Cancelled, AppError.AuthenticationUnavailable, AppError.KeyInvalidated, AppError.Expired,
+    is AppError.Unknown,
+    -> ConnectError.Unknown
 }

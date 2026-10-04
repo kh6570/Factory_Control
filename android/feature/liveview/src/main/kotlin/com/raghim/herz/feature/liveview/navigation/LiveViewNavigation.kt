@@ -21,11 +21,13 @@ fun NavController.navigateToLiveView(navOptions: NavOptions? = null, alarmId: St
  */
 fun NavGraphBuilder.liveViewScreen(
     onAddCameras: () -> Unit,
+    onOpenSettings: () -> Unit,
     onFullscreenChanged: (Boolean) -> Unit,
 ) {
     composable<LiveViewRoute> {
         ActiveCamerasRoute(
             onAddCameras = onAddCameras,
+            onOpenSettings = onOpenSettings,
             onFullscreenChanged = onFullscreenChanged,
         )
     }

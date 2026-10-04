@@ -6,4 +6,8 @@ plugins {
 
 dependencies {
     implementation(project(":core:common"))
+    implementation(project(":core:domain"))
+    api(libs.androidx.fragment)
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.core.ktx)
 }

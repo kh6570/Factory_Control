@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="security_open_door_title">Open %1$s?</string>
+    <string name="security_open_door_subtitle">Confirm with your fingerprint</string>
+    <string name="security_cancel">Cancel</string>
+</resources>

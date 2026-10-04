@@ -13,7 +13,9 @@ internal fun AppError.toPlayerError(): PlayerError = when (this) {
     AppError.Unauthorized -> PlayerError.Unauthorized
     AppError.Unreachable, AppError.Timeout, AppError.Offline -> PlayerError.Unreachable
     AppError.NotFound, AppError.NoStreamFound -> PlayerError.Unsupported
-    is AppError.Unknown -> PlayerError.Unknown
+    AppError.Cancelled, AppError.AuthenticationUnavailable, AppError.KeyInvalidated, AppError.Expired,
+    is AppError.Unknown,
+    -> PlayerError.Unknown
 }
 
 private val UNAUTHORIZED_STATUS = Regex("""\b401\b""")

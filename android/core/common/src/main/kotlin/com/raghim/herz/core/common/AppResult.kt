@@ -23,6 +23,18 @@ sealed interface AppError {
 
     data object NotFound : AppError
 
+    /** The user dismissed a confirmation, e.g. the biometric prompt. */
+    data object Cancelled : AppError
+
+    /** No strong biometric is enrolled, the hardware is missing, or the OS is too old. */
+    data object AuthenticationUnavailable : AppError
+
+    /** The signing key was invalidated, e.g. by a new fingerprint. The device must be registered again. */
+    data object KeyInvalidated : AppError
+
+    /** A one-time challenge ran out before the command was sent. */
+    data object Expired : AppError
+
     data class Unknown(val message: String?) : AppError
 }
 

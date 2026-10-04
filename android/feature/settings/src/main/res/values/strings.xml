@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_section_doors">Doors</string>
+    <string name="settings_hold_to_open">Hold to open</string>
+    <string name="settings_seconds">%1$s s</string>
+    <string name="settings_hold_to_open_body">How long to hold a door button before the fingerprint prompt. Longer is safer against accidental touches.</string>
+    <string name="settings_try_it">Try it here. This button opens nothing.</string>
+    <string name="settings_try_label">Hold to test</string>
+    <string name="settings_try_holding">Keep holding…</string>
+</resources>

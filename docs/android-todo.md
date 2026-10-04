@@ -81,10 +81,16 @@ Camera plan step 5. Needs a real phone on the cameras' Wi-Fi.
 
 ## Phase 6: Doors
 
-- [ ] `:core:security`: `DeviceKey` and `BiometricSigner` exactly as spec D11. Do not simplify
-- [ ] `:core:designsystem`: `HoldToConfirmButton` (1.5 s)
-- [ ] `:core:data`: `DoorRepository`, challenge, signed open, `door.state` from WS into Room
-- [ ] `:feature:doors`: list, detail, hold, biometric, Unlocking / Unlocked / open / closed, logs, offline message
+- [x] `:core:security`: `DeviceKey` and `BiometricSigner` exactly as spec D11. Do not simplify
+- [x] `:core:designsystem`: `HoldToConfirmButton`, hold time 1.5 to 3 s (2 s default) set in `:feature:settings`
+- [x] `:core:domain`: `DoorRepository`, `DoorCommandSigner`, `OpenDoorUseCase` (challenge, sign, open) independent of transport
+- [x] `:core:data`: `SimulatedDoorRepository` (nonce, signature check, ack, 5 s pulse, reed contact, one offline door)
+- [x] `:feature:liveview`: door panel next to the wall, hold, biometric, Unlocking / Unlocked / open / closed, offline
+- [ ] Decide the lock transport (server, Wi-Fi or Bluetooth controllers) and add its `DoorRepository`
+- [ ] Device registration: send `DeviceKey.publicKey()` to the server or controller, re-register after `KeyInvalidated`
+- [ ] Link doors to cameras (server rules, or a setting in `:feature:cameras`) so "doors on the wall" sort first and tiles show a lock badge
+- [ ] `:feature:doors`: list, detail, logs. Reuse the door row and `OpenDoorUseCase`
+- [ ] Hide door buttons for the Viewer role (spec D18)
 
 ## Phase 7: The rest
 

@@ -41,6 +41,23 @@ object HerzIcons {
         )
     }
 
+    val LockOpen: ImageVector by lazy {
+        icon(
+            "LockOpen",
+            "M12,17c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,8h-1V6c0,-2.76 -2.24,-5 -5,-5" +
+                "S7,3.24 7,6h1.9c0,-1.71 1.39,-3.1 3.1,-3.1 1.71,0 3.1,1.39 3.1,3.1v2H6c-1.1,0 -2,0.9 -2,2v10" +
+                "c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V10c0,-1.1 -0.9,-2 -2,-2zM18,20H6V10h12v10z",
+        )
+    }
+
+    val DoorFront: ImageVector by lazy {
+        icon("DoorFront", "M19,19V5c0,-1.1 -0.9,-2 -2,-2H7C5.9,3 5,3.9 5,5v14H3v2h18v-2H19zM15,13h-2v-2h2V13z")
+    }
+
+    val DoorOpen: ImageVector by lazy {
+        icon("DoorOpen", "M14,6v15H3v-2h2V3h9v1h5v15h2v2h-4V6h-3zM10,11v2h2v-2h-2z")
+    }
+
     private fun icon(name: String, path: String): ImageVector =
         ImageVector.Builder(
             name = name,

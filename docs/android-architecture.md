@@ -51,7 +51,17 @@ The task list lives in [android-todo.md](android-todo.md).
 | `ActiveCamerasRepository`, `DoorRepository`, `AlarmRepository`, ... | `:core:data` (`LocalActiveCamerasRepository` until the server exists) | fakes in `:core:testing` |
 | `VideoPlayerFactory` | `WebRtcPlayer` in `:core:video-webrtc` | `Media3RtspPlayer` in `:core:video-rtsp`, `FakeVideoPlayer` in `:core:testing` |
 
+| `DoorRepository` | `ServerDoorRepository` (spec D11, B8), or a Wi-Fi / Bluetooth lock-controller repository | `SimulatedDoorRepository` in `:core:data`, fake in `:core:testing` |
+| `DoorCommandSigner` | `BiometricDoorSigner` in `:core:security` (spec D11 `DeviceKey`) | fake in `:core:testing` |
+| `UserSettingsRepository` | `PreferencesUserSettingsRepository` in `:core:data` (DataStore) | fake in `:core:testing` |
+
 `DirectLanCameraSource` sits in `:core:data` because it only reads saved cameras and their encrypted passwords from Room.
+
+### Doors: one sequence for every transport
+
+Every door transport uses the same steps: get a one-time challenge, sign `doorId|nonce|timestamp` with the device key after a strong biometric check, send the signed command, wait for the lock controller's acknowledgement. `OpenDoorUseCase` runs these steps. Only the `DoorRepository` binding in `core/data/di/DoorModule.kt` decides where they go (simulator now, server or direct lock controllers later).
+
+On screen, opening is: hold the button (1.5 to 3 s, 2 s by default, set in Settings), then the fingerprint prompt naming the door, then "Unlocking…", then "Unlocked" with a countdown, then "Door open" / "Locked" from the reed contact. Moving the finger, a scroll, or a swipe cancels the hold. `DeviceKey` needs Android 11 (`setUserAuthenticationParameters`), so phones on Android 8 to 10 cannot open doors.
 
 ### No cleartext to cameras
 
@@ -87,10 +97,10 @@ Status: **Empty** = build file only. **Started** = some code. **Done** = done wi
 | `:core:data` | Repository impls, `EventStream` router, `ServerCameraSource`, sync workers (D14) | domain, model, common, network, database, datastore, security | Started (local camera repositories, `DirectLanCameraSource`) |
 | `:core:network` | Retrofit APIs, OkHttp, WebSocket, `CertificatePinner`, auth interceptor, token refresh, `NetworkMonitor` | model, common, domain, security | Started (`NetworkMonitor` only) |
 | `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Started (cameras, active sessions) |
-| `:core:datastore` | DataStore settings: tile limits, stream quality, player choice | model, common | Empty |
-| `:core:security` | `TokenStore` (Tink + Keystore), `DeviceKey`, `BiometricSigner` exactly as spec D11, encrypted camera passwords | common | Started (camera password cipher) |
+| `:core:datastore` | DataStore settings: tile limits, stream quality, player choice | model, common | Started (hold-to-open time) |
+| `:core:security` | `TokenStore` (Tink + Keystore), `DeviceKey`, `BiometricSigner` exactly as spec D11, encrypted camera passwords | common, domain | Started (camera password cipher, `DeviceKey`, `BiometricDoorSigner`) |
 | `:core:notifications` | FCM service, channels, `AlarmNotifier`, full-screen intent, dedupe | domain, model, common | Empty |
-| `:core:designsystem` (Compose) | `HerzTheme`, colors, type, `CameraTile` frame, `StatusBadge`, `HoldToConfirmButton` | nothing | Started (theme, `StatusBadge`, icons) |
+| `:core:designsystem` (Compose) | `HerzTheme`, colors, type, `CameraTile` frame, `StatusBadge`, `HoldToConfirmButton` | nothing | Started (theme, `StatusBadge`, `HoldToConfirmButton`, icons) |
 | `:core:ui` (Compose) | Loading, empty, error, offline states, shared adaptive helpers | designsystem (api), model | Started (message and loading states) |
 | `:core:testing` (Compose) | Fakes for every domain interface, `FakeVideoPlayer`, `MainDispatcherRule`, Turbine helpers | domain, model, common, video (api) | Started (camera fakes) |
 
@@ -115,7 +125,7 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 
 | Module | Screens | Extra deps | Status |
 | --- | --- | --- | --- |
-| `:feature:liveview` | Active Cameras grid, maximize, swipe, Back (spec D10) | `:core:video` | Started (no alarm banner yet) |
+| `:feature:liveview` | Active Cameras grid, maximize, swipe, Back (spec D10), door panel (bottom panel on phones, side column on wide screens) | `:core:video` | Started (no alarm banner yet) |
 | `:feature:cameras` | Camera list, Start/Stop, multi-select, camera settings | | Done |
 | `:feature:discovery` | Find cameras, enter login, test, save (dev) | | Done |
 | `:feature:auth` | Login, TOTP, device registration | | Empty |
@@ -127,7 +137,7 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 | `:feature:devices` | Node health | | Empty |
 | `:feature:rules` | Admin: sensor to camera links | | Empty |
 | `:feature:users` | Admin: users, roles, device approval | | Empty |
-| `:feature:settings` | Stream quality, tile limits, notifications, about | | Empty |
+| `:feature:settings` | Stream quality, tile limits, notifications, about | | Started (hold-to-open time) |
 
 `:feature:camerasettings` from the camera plan is folded into `:feature:cameras`, so there is one camera management screen set.
 

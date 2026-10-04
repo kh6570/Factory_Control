@@ -10,6 +10,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.raghim.herz.core.designsystem.theme.HerzTheme
 import com.raghim.herz.core.model.ActiveCamera
+import com.raghim.herz.core.model.Door
+import com.raghim.herz.core.model.DoorContact
+import com.raghim.herz.core.model.LockState
 import com.raghim.herz.core.model.NetworkMode
 import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
@@ -18,6 +21,9 @@ import com.raghim.herz.core.video.PlayerError
 import com.raghim.herz.core.video.PlayerState
 import com.raghim.herz.core.video.VideoPlayer
 import com.raghim.herz.core.video.VideoScale
+import com.raghim.herz.feature.liveview.door.DoorCommand
+import com.raghim.herz.feature.liveview.door.DoorItem
+import com.raghim.herz.feature.liveview.door.DoorPanelUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.Instant
@@ -66,10 +72,30 @@ private fun previewPlayer(id: String): VideoPlayer = PreviewPlayer(
     },
 )
 
+private val previewDoors = DoorPanelUiState(
+    doors = listOf(
+        DoorItem(Door("d1", "Main gate", "Gate", contact = DoorContact.CLOSED), onWall = true),
+        DoorItem(
+            Door("d2", "Loading bay", "Warehouse", lock = LockState.UNLOCKED, contact = DoorContact.OPEN),
+        ),
+        DoorItem(Door("d3", "Office entrance", "Office", contact = DoorContact.CLOSED), command = DoorCommand.Unlocking),
+        DoorItem(Door("d4", "Roof access", "Roof", isOnline = false)),
+    ),
+    isLoading = false,
+)
+
 @Composable
 private fun WallPreview(state: ActiveCamerasUiState) {
     HerzTheme(darkTheme = true) {
-        ActiveCamerasScreen(state = state, player = ::previewPlayer, onIntent = {}, onAddCameras = {})
+        ActiveCamerasScreen(
+            state = state,
+            player = ::previewPlayer,
+            onIntent = {},
+            doorState = previewDoors,
+            onDoorIntent = {},
+            onAddCameras = {},
+            onOpenSettings = {},
+        )
     }
 }
 

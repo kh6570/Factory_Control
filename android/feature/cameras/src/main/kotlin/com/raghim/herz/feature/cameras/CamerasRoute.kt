@@ -16,7 +16,6 @@ import com.raghim.herz.feature.cameras.model.CamerasMessage
 @Composable
 internal fun CamerasRouteContent(
     onAddCamera: () -> Unit,
-    onOpenLive: () -> Unit,
     viewModel: CamerasViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -36,7 +35,6 @@ internal fun CamerasRouteContent(
         snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
         onAddCamera = onAddCamera,
-        onOpenLive = onOpenLive,
     )
 }
 

@@ -7,6 +7,7 @@ import com.raghim.herz.core.common.AppError
 import com.raghim.herz.core.common.AppResult
 import com.raghim.herz.core.model.Door
 import com.raghim.herz.core.model.DoorChallenge
+import com.raghim.herz.core.model.LockState
 import com.raghim.herz.core.model.SignedDoorCommand
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,7 @@ class DoorUseCasesTest {
     private class Repo(var challengeResult: (String) -> AppResult<DoorChallenge>) : DoorRepository {
         val state = MutableStateFlow<List<Door>>(emptyList())
         val opened = mutableListOf<SignedDoorCommand>()
+        val released = mutableListOf<String>()
         val challenged = mutableListOf<String>()
         override val doors: Flow<List<Door>> = state
         override suspend fun challenge(doorId: String): AppResult<DoorChallenge> {
@@ -38,6 +40,40 @@ class DoorUseCasesTest {
         override suspend fun open(command: SignedDoorCommand): AppResult<Unit> {
             opened += command
             return AppResult.Success(Unit)
+        }
+        override suspend fun release(doorId: String): AppResult<Unit> {
+            released += doorId
+            return AppResult.Success(Unit)
+        }
+        override suspend fun add(name: String, area: String?): Door {
+            val door = Door(id = "new", name = name, area = area)
+            state.value = state.value + door
+            return door
+        }
+        override suspend fun update(id: String, name: String, area: String?) {
+            state.value = state.value.map { if (it.id == id) it.copy(name = name, area = area) else it }
+        }
+        override suspend fun setOnLivePanel(id: String, shown: Boolean) {
+            state.value = state.value.map { if (it.id == id) it.copy(onLivePanel = shown) else it }
+        }
+        override suspend fun lock(doorId: String): AppResult<Unit> {
+            state.value = state.value.map {
+                if (it.id == doorId) it.copy(lock = LockState.LOCKED) else it
+            }
+            return AppResult.Success(Unit)
+        }
+        override suspend fun remove(id: String) {
+            state.value = state.value.filterNot { it.id == id }
+        }
+    }
+
+    private class Settings(required: Boolean = true) : UserSettingsRepository {
+        val fingerprint = MutableStateFlow(required)
+        override val holdToOpen: Flow<Duration> = MutableStateFlow(HoldToOpen.Default)
+        override suspend fun setHoldToOpen(duration: Duration) = Unit
+        override val requireFingerprint: Flow<Boolean> = fingerprint
+        override suspend fun setRequireFingerprint(required: Boolean) {
+            fingerprint.value = required
         }
     }
 
@@ -53,7 +89,8 @@ class DoorUseCasesTest {
 
     private val repo = Repo { AppResult.Success(DoorChallenge(it, "n1", now.plusSeconds(30))) }
     private val signer = Signer()
-    private val open = OpenDoorUseCase(repo, signer, clock)
+    private val settings = Settings()
+    private val open = OpenDoorUseCase(repo, signer, settings, clock)
     private val gate = Door(id = "D1", name = "Main gate")
 
     @Test
@@ -70,6 +107,18 @@ class DoorUseCasesTest {
         assertEquals("D1", command.doorId)
         assertEquals("n1", command.nonce)
         assertArrayEquals(byteArrayOf(7, 7), command.signature)
+    }
+
+    @Test
+    fun `without fingerprint the hold opens the door and nothing is signed`() = runTest {
+        settings.fingerprint.value = false
+
+        val result = open(gate)
+
+        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(listOf("D1"), repo.released)
+        assertTrue(signer.payloads.isEmpty())
+        assertTrue(repo.challenged.isEmpty())
     }
 
     @Test
@@ -141,10 +190,38 @@ class DoorUseCasesTest {
             override suspend fun setHoldToOpen(duration: Duration) {
                 stored = duration
             }
+            override val requireFingerprint: Flow<Boolean> = MutableStateFlow(true)
+            override suspend fun setRequireFingerprint(required: Boolean) = Unit
         }
 
         SetHoldToOpenUseCase(settings)(2600.milliseconds)
 
         assertEquals(2500.milliseconds, settings.stored)
+    }
+
+    @Test
+    fun `add trims the name and drops a blank area`() = runTest {
+        val added = AddDoorUseCase(repo)("  Side gate  ", "  ")
+
+        assertEquals(Door(id = "new", name = "Side gate", area = null), added)
+    }
+
+    @Test
+    fun `add and update ignore a blank name`() = runTest {
+        assertEquals(null, AddDoorUseCase(repo)("   ", "Gate"))
+        repo.state.value = listOf(gate)
+
+        UpdateDoorUseCase(repo)("D1", "  ", "Yard")
+
+        assertEquals("Main gate", repo.state.value.single().name)
+    }
+
+    @Test
+    fun `remove deletes the door`() = runTest {
+        repo.state.value = listOf(gate)
+
+        RemoveDoorUseCase(repo)("D1")
+
+        assertTrue(repo.state.value.isEmpty())
     }
 }

@@ -4,6 +4,7 @@ package com.raghim.herz.feature.liveview.door
 import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -70,7 +72,7 @@ internal fun DoorPanelLayout(
     modifier: Modifier = Modifier,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    if (state.doors.isEmpty()) {
+    if (state.isLoading && state.doors.isEmpty()) {
         Box(modifier) { content(PaddingValues()) }
         return
     }
@@ -145,23 +147,51 @@ private fun DoorPanelHeader(state: DoorPanelUiState) {
 
 @Composable
 private fun DoorList(state: DoorPanelUiState, onIntent: (DoorPanelIntent) -> Unit, modifier: Modifier) {
+    if (state.doors.isEmpty()) {
+        Text(
+            text = stringResource(R.string.liveview_doors_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        return
+    }
     LazyColumn(modifier = modifier, contentPadding = PaddingValues(bottom = 8.dp)) {
         items(state.doors, key = { it.door.id }) { item ->
-            DoorRow(item = item, holdToOpen = state.holdToOpen, onOpen = { onIntent(DoorPanelIntent.Open(item.door.id)) })
+            DoorRow(
+                item = item,
+                holdToOpen = state.holdToOpen,
+                onOpen = { onIntent(DoorPanelIntent.Open(item.door.id)) },
+                onLock = { onIntent(DoorPanelIntent.Lock(item.door.id)) },
+                modifier = Modifier.animateItem(),
+            )
         }
     }
 }
 
 @Composable
-private fun DoorRow(item: DoorItem, holdToOpen: Duration, onOpen: () -> Unit) {
+private fun DoorRow(
+    item: DoorItem,
+    holdToOpen: Duration,
+    onOpen: () -> Unit,
+    onLock: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val door = item.door
     val secondsLeft by rememberSecondsLeft(door.unlockedUntil)
     val status = doorStatus(item, secondsLeft)
+    val open = door.lock == LockState.UNLOCKED
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth().height(RowHeight).padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (open) HerzTheme.status.live.copy(alpha = 0.18f) else Color.Transparent)
+            .height(RowHeight)
+            .padding(horizontal = 8.dp),
     ) {
         Icon(status.icon, contentDescription = null, tint = status.color, modifier = Modifier.size(22.dp))
         Column(Modifier.weight(1f)) {
@@ -174,15 +204,22 @@ private fun DoorRow(item: DoorItem, holdToOpen: Duration, onOpen: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        HoldToConfirmButton(
-            label = status.action,
-            holdingLabel = stringResource(R.string.liveview_door_keep_holding),
-            holdDuration = holdToOpen,
-            onConfirm = onOpen,
-            enabled = item.canOpen,
-            icon = if (item.canOpen) HerzIcons.LockOpen else null,
-            modifier = Modifier.width(ActionWidth),
-        )
+        if (open && item.command == null) {
+            FilledTonalButton(onClick = onLock, modifier = Modifier.width(ActionWidth)) {
+                Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                Text(stringResource(R.string.liveview_door_lock))
+            }
+        } else {
+            HoldToConfirmButton(
+                label = status.action,
+                holdingLabel = stringResource(R.string.liveview_door_keep_holding),
+                holdDuration = holdToOpen,
+                onConfirm = onOpen,
+                enabled = item.canOpen,
+                icon = if (item.canOpen) HerzIcons.LockOpen else null,
+                modifier = Modifier.width(ActionWidth),
+            )
+        }
     }
 }
 

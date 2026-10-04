@@ -11,6 +11,8 @@ import com.raghim.herz.feature.cameras.navigation.camerasScreen
 import com.raghim.herz.feature.cameras.navigation.navigateToCameras
 import com.raghim.herz.feature.discovery.navigation.discoveryScreen
 import com.raghim.herz.feature.discovery.navigation.navigateToDiscovery
+import com.raghim.herz.feature.doors.navigation.doorsScreen
+import com.raghim.herz.feature.doors.navigation.navigateToDoors
 import com.raghim.herz.feature.liveview.navigation.LiveViewRoute
 import com.raghim.herz.feature.liveview.navigation.liveViewScreen
 import com.raghim.herz.feature.liveview.navigation.navigateToLiveView
@@ -30,15 +32,11 @@ fun HerzNavHost(
         modifier = modifier,
     ) {
         liveViewScreen(
-            onAddCameras = navController::navigateToDiscovery,
-            onOpenSettings = navController::navigateToSettings,
             onFullscreenChanged = onFullscreenChanged,
         )
+        doorsScreen(onOpenSettings = navController::navigateToSettings)
         settingsScreen(onBack = navController::popBackStack)
-        camerasScreen(
-            onAddCamera = navController::navigateToDiscovery,
-            onOpenLive = { navController.navigateToTopLevel(TopLevelDestination.LIVE) },
-        )
+        camerasScreen(onAddCamera = navController::navigateToDiscovery)
         discoveryScreen(
             onBack = navController::popBackStack,
             onCameraAdded = { navController.navigateToTopLevel(TopLevelDestination.LIVE) },
@@ -55,5 +53,6 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
     when (destination) {
         TopLevelDestination.LIVE -> navigateToLiveView(options)
         TopLevelDestination.CAMERAS -> navigateToCameras(options)
+        TopLevelDestination.DOORS -> navigateToDoors(options)
     }
 }

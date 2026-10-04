@@ -21,4 +21,10 @@ internal class PreferencesUserSettingsRepository @Inject constructor(
     override suspend fun setHoldToOpen(duration: Duration) {
         preferences.setHoldToOpenMillis(HoldToOpen.normalize(duration).inWholeMilliseconds)
     }
+
+    override val requireFingerprint: Flow<Boolean> = preferences.requireFingerprint.map { it ?: true }
+
+    override suspend fun setRequireFingerprint(required: Boolean) {
+        preferences.setRequireFingerprint(required)
+    }
 }

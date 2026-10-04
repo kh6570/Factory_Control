@@ -4,6 +4,7 @@
     <string name="app_name">Herz</string>
     <string name="nav_live">Live</string>
     <string name="nav_cameras">Cameras</string>
+    <string name="nav_doors">Doors</string>
     <string name="local_network_needed">Herz needs local network access to find cameras and show their video.</string>
     <string name="local_network_allow">Allow</string>
     <string name="local_network_settings">App settings</string>

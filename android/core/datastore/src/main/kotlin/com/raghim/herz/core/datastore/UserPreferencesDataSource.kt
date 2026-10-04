@@ -3,6 +3,7 @@ package com.raghim.herz.core.datastore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +20,15 @@ class UserPreferencesDataSource @Inject constructor(
         store.edit { it[HOLD_TO_OPEN_MS] = millis }
     }
 
+    /** Null until the user chooses. Callers treat null as "ask for a fingerprint". */
+    val requireFingerprint: Flow<Boolean?> = store.data.map { it[REQUIRE_FINGERPRINT] }
+
+    suspend fun setRequireFingerprint(required: Boolean) {
+        store.edit { it[REQUIRE_FINGERPRINT] = required }
+    }
+
     private companion object {
         val HOLD_TO_OPEN_MS = longPreferencesKey("hold_to_open_ms")
+        val REQUIRE_FINGERPRINT = booleanPreferencesKey("require_fingerprint")
     }
 }

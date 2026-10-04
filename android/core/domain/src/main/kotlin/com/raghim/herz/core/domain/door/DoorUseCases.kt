@@ -8,6 +8,7 @@ import com.raghim.herz.core.model.Door
 import com.raghim.herz.core.model.SignedDoorCommand
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -26,10 +27,15 @@ class ObserveDoorsUseCase @Inject constructor(
 class OpenDoorUseCase @Inject constructor(
     private val repository: DoorRepository,
     private val signer: DoorCommandSigner,
+    private val settings: UserSettingsRepository,
     private val clock: AppClock,
 ) {
     suspend operator fun invoke(door: Door, onAuthorized: () -> Unit = {}): AppResult<Unit> {
         if (!door.isOnline) return AppResult.Failure(AppError.Offline)
+        if (!settings.requireFingerprint.first()) {
+            onAuthorized()
+            return repository.release(door.id)
+        }
 
         val challenge = when (val result = repository.challenge(door.id)) {
             is AppResult.Success -> result.value
@@ -59,4 +65,56 @@ class SetHoldToOpenUseCase @Inject constructor(
     private val settings: UserSettingsRepository,
 ) {
     suspend operator fun invoke(duration: Duration) = settings.setHoldToOpen(HoldToOpen.normalize(duration))
+}
+
+class ObserveRequireFingerprintUseCase @Inject constructor(
+    private val settings: UserSettingsRepository,
+) {
+    operator fun invoke(): Flow<Boolean> = settings.requireFingerprint.distinctUntilChanged()
+}
+
+class SetRequireFingerprintUseCase @Inject constructor(
+    private val settings: UserSettingsRepository,
+) {
+    suspend operator fun invoke(required: Boolean) = settings.setRequireFingerprint(required)
+}
+
+class AddDoorUseCase @Inject constructor(
+    private val repository: DoorRepository,
+) {
+    /** Returns null when [name] is blank. [area] blank becomes null. */
+    suspend operator fun invoke(name: String, area: String?): Door? {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return null
+        return repository.add(trimmed, area?.trim()?.ifEmpty { null })
+    }
+}
+
+class UpdateDoorUseCase @Inject constructor(
+    private val repository: DoorRepository,
+) {
+    /** Does nothing when [name] is blank. */
+    suspend operator fun invoke(id: String, name: String, area: String?) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        repository.update(id, trimmed, area?.trim()?.ifEmpty { null })
+    }
+}
+
+class LockDoorUseCase @Inject constructor(
+    private val repository: DoorRepository,
+) {
+    suspend operator fun invoke(id: String): AppResult<Unit> = repository.lock(id)
+}
+
+class SetDoorOnLivePanelUseCase @Inject constructor(
+    private val repository: DoorRepository,
+) {
+    suspend operator fun invoke(id: String, shown: Boolean) = repository.setOnLivePanel(id, shown)
+}
+
+class RemoveDoorUseCase @Inject constructor(
+    private val repository: DoorRepository,
+) {
+    suspend operator fun invoke(id: String) = repository.remove(id)
 }

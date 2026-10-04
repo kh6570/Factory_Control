@@ -16,6 +16,8 @@ data class Door(
     val lock: LockState = LockState.LOCKED,
     val contact: DoorContact = DoorContact.UNKNOWN,
     val isOnline: Boolean = true,
+    /** Shown in the fold-out door list on the Live screen. */
+    val onLivePanel: Boolean = false,
     /** When an unlocked door locks again on its own. Null while locked. */
     val unlockedUntil: Instant? = null,
 )

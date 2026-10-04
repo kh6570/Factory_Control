@@ -93,8 +93,6 @@ private fun WallPreview(state: ActiveCamerasUiState) {
             onIntent = {},
             doorState = previewDoors,
             onDoorIntent = {},
-            onAddCameras = {},
-            onOpenSettings = {},
         )
     }
 }

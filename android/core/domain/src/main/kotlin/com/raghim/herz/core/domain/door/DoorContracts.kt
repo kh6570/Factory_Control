@@ -20,8 +20,26 @@ interface DoorRepository {
 
     suspend fun challenge(doorId: String): AppResult<DoorChallenge>
 
-    /** Returns when the lock controller acknowledged the command. */
+    /** Returns when the lock controller acknowledged the signed command. */
     suspend fun open(command: SignedDoorCommand): AppResult<Unit>
+
+    /**
+     * Opens a door with no signature. Used only when the user turned fingerprint confirmation off.
+     * A server-backed repository should refuse this; the server requires a signature (spec D11).
+     */
+    suspend fun release(doorId: String): AppResult<Unit>
+
+    /** Locks a door that was opened, so it can be opened again. */
+    suspend fun lock(doorId: String): AppResult<Unit>
+
+    suspend fun add(name: String, area: String?): Door
+
+    suspend fun update(id: String, name: String, area: String?)
+
+    /** Shows or hides a door in the Live door panel. */
+    suspend fun setOnLivePanel(id: String, shown: Boolean)
+
+    suspend fun remove(id: String)
 }
 
 /** Signs a door command with the device key after a strong biometric check (spec D11). */
@@ -30,10 +48,15 @@ interface DoorCommandSigner {
 }
 
 interface UserSettingsRepository {
-    /** How long the open button must be held before the biometric prompt shows. */
+    /** How long the open button must be held before anything happens. */
     val holdToOpen: Flow<Duration>
 
     suspend fun setHoldToOpen(duration: Duration)
+
+    /** When false, holding the button opens the door and no fingerprint is asked. Defaults to true. */
+    val requireFingerprint: Flow<Boolean>
+
+    suspend fun setRequireFingerprint(required: Boolean)
 }
 
 object HoldToOpen {

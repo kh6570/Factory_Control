@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -86,7 +87,34 @@ internal fun SettingsScreen(
                 value = state.holdToOpen,
                 onChange = { onIntent(SettingsIntent.SetHoldToOpen(it)) },
             )
+            FingerprintSetting(
+                required = state.requireFingerprint,
+                onChange = { onIntent(SettingsIntent.SetRequireFingerprint(it)) },
+            )
         }
+    }
+}
+
+@Composable
+private fun FingerprintSetting(required: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(stringResource(R.string.settings_fingerprint), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = stringResource(
+                    if (required) R.string.settings_fingerprint_on else R.string.settings_fingerprint_off,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = required,
+            onCheckedChange = onChange,
+        )
     }
 }
 

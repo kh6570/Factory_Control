@@ -4,6 +4,8 @@ package com.raghim.herz.core.data.door
 import com.raghim.herz.core.common.AppClock
 import com.raghim.herz.core.common.AppError
 import com.raghim.herz.core.common.AppResult
+import com.raghim.herz.core.database.dao.DoorDao
+import com.raghim.herz.core.database.model.DoorEntity
 import com.raghim.herz.core.model.DoorChallenge
 import com.raghim.herz.core.model.DoorContact
 import com.raghim.herz.core.model.LockState
@@ -12,7 +14,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -26,9 +27,9 @@ class SimulatedDoorRepositoryTest {
     private var validSignature = true
 
     private fun TestScope.repository() = SimulatedDoorRepository(
+        doorsDao = MemoryDoorDao(),
         verifier = { _, _ -> validSignature },
         clock = AppClock { Instant.ofEpochMilli(testScheduler.currentTime) },
-        scope = backgroundScope,
     )
 
     private suspend fun SimulatedDoorRepository.signedChallenge(doorId: String): SignedDoorCommand {
@@ -39,26 +40,23 @@ class SimulatedDoorRepositoryTest {
     private suspend fun SimulatedDoorRepository.door(id: String) = doors.first().first { it.id == id }
 
     @Test
-    fun `open releases the lock for a 5 s pulse with reed contact open then closed`() = runTest {
+    fun `an opened door stays open`() = runTest {
         val repository = repository()
 
         val result = repository.open(repository.signedChallenge("D01"))
 
         assertEquals(AppResult.Success(Unit), result)
         assertEquals(LockState.UNLOCKED, repository.door("D01").lock)
-        assertEquals(DoorContact.CLOSED, repository.door("D01").contact)
+        assertEquals(DoorContact.OPEN, repository.door("D01").contact)
+        assertNull(repository.door("D01").unlockedUntil)
 
-        advanceTimeBy(1_300)
+        advanceTimeBy(30_000)
+        assertEquals(LockState.UNLOCKED, repository.door("D01").lock)
         assertEquals(DoorContact.OPEN, repository.door("D01").contact)
 
-        advanceTimeBy(3_000)
-        assertEquals(DoorContact.CLOSED, repository.door("D01").contact)
-        assertEquals(LockState.UNLOCKED, repository.door("D01").lock)
-
-        advanceTimeBy(1_000)
-        runCurrent()
+        assertEquals(AppResult.Success(Unit), repository.lock("D01"))
         assertEquals(LockState.LOCKED, repository.door("D01").lock)
-        assertNull(repository.door("D01").unlockedUntil)
+        assertEquals(DoorContact.CLOSED, repository.door("D01").contact)
     }
 
     @Test
@@ -106,5 +104,37 @@ class SimulatedDoorRepositoryTest {
 
         assertEquals(AppResult.Failure(AppError.Offline), repository.challenge("D06"))
         assertTrue(repository.doors.first().any { !it.isOnline })
+    }
+
+    @Test
+    fun `added doors are saved and a removed door is gone`() = runTest {
+        val repository = repository()
+        repository.challenge("D01")
+
+        val added = repository.add("Side gate", "Yard")
+        repository.update(added.id, "Yard gate", "Yard")
+        assertEquals("Yard gate", repository.door(added.id).name)
+
+        repository.remove(added.id)
+        assertEquals(AppResult.Failure(AppError.NotFound), repository.challenge(added.id))
+    }
+}
+
+/** In memory, so the simulator tests do not need a database. */
+private class MemoryDoorDao : DoorDao {
+    private val state = kotlinx.coroutines.flow.MutableStateFlow<List<DoorEntity>>(emptyList())
+    override fun observeAll() = state
+    override suspend fun count(): Int = state.value.size
+    override suspend fun upsert(entity: DoorEntity) {
+        state.value = state.value.filterNot { it.id == entity.id } + entity
+    }
+    override suspend fun update(id: String, name: String, area: String?) {
+        state.value = state.value.map { if (it.id == id) it.copy(name = name, area = area) else it }
+    }
+    override suspend fun setOnLivePanel(id: String, shown: Boolean) {
+        state.value = state.value.map { if (it.id == id) it.copy(onLivePanel = shown) else it }
+    }
+    override suspend fun delete(id: String) {
+        state.value = state.value.filterNot { it.id == id }
     }
 }

@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raghim.herz.core.domain.camera.ObserveActiveCamerasUseCase
 import com.raghim.herz.core.domain.camera.ObserveNetworkModeUseCase
-import com.raghim.herz.core.domain.camera.StopCameraUseCase
 import com.raghim.herz.core.domain.camera.liveBudget
 import com.raghim.herz.core.model.ActiveCamera
 import com.raghim.herz.core.model.NetworkMode
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ActiveCamerasUiState(
@@ -37,7 +35,6 @@ sealed interface ActiveCamerasIntent {
     data class Maximize(val cameraId: String) : ActiveCamerasIntent
     data object Minimize : ActiveCamerasIntent
     data class SwipeTo(val cameraId: String) : ActiveCamerasIntent
-    data class Stop(val cameraId: String) : ActiveCamerasIntent
     data class Retry(val cameraId: String) : ActiveCamerasIntent
 }
 
@@ -46,7 +43,6 @@ sealed interface ActiveCamerasIntent {
 class ActiveCamerasViewModel @Inject constructor(
     observeActiveCameras: ObserveActiveCamerasUseCase,
     observeNetworkMode: ObserveNetworkModeUseCase,
-    private val stopCamera: StopCameraUseCase,
     private val pool: PlayerPool,
     private val savedState: SavedStateHandle,
 ) : ViewModel() {
@@ -91,10 +87,6 @@ class ActiveCamerasViewModel @Inject constructor(
                 previous?.let { pool.peek(it)?.switchQuality(StreamQuality.SUB) }
                 pool.get(intent.cameraId).switchQuality(StreamQuality.MAIN)
                 savedState[KEY_MAXIMIZED] = intent.cameraId
-            }
-            is ActiveCamerasIntent.Stop -> {
-                if (maximized.value == intent.cameraId) savedState[KEY_MAXIMIZED] = null
-                viewModelScope.launch { stopCamera(intent.cameraId) }
             }
             is ActiveCamerasIntent.Retry -> pool.get(intent.cameraId).retry()
         }

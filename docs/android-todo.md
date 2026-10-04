@@ -86,6 +86,8 @@ Camera plan step 5. Needs a real phone on the cameras' Wi-Fi.
 - [x] `:core:domain`: `DoorRepository`, `DoorCommandSigner`, `OpenDoorUseCase` (challenge, sign, open) independent of transport
 - [x] `:core:data`: `SimulatedDoorRepository` (nonce, signature check, ack, 5 s pulse, reed contact, one offline door)
 - [x] `:feature:liveview`: door panel next to the wall, hold, biometric, Unlocking / Unlocked / open / closed, offline
+- [x] `:feature:doors`: add, edit (name and area) and remove, saved in Room
+- [x] `:feature:settings`: fingerprint on or off. Off means the hold alone opens the door. On by default
 - [ ] Decide the lock transport (server, Wi-Fi or Bluetooth controllers) and add its `DoorRepository`
 - [ ] Device registration: send `DeviceKey.publicKey()` to the server or controller, re-register after `KeyInvalidated`
 - [ ] Link doors to cameras (server rules, or a setting in `:feature:cameras`) so "doors on the wall" sort first and tiles show a lock badge

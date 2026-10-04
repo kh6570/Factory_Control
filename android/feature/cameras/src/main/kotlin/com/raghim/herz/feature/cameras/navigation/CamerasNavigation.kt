@@ -13,11 +13,8 @@ data object CamerasRoute
 
 fun NavController.navigateToCameras(navOptions: NavOptions? = null) = navigate(CamerasRoute, navOptions)
 
-fun NavGraphBuilder.camerasScreen(
-    onAddCamera: () -> Unit,
-    onOpenLive: () -> Unit,
-) {
+fun NavGraphBuilder.camerasScreen(onAddCamera: () -> Unit) {
     composable<CamerasRoute> {
-        CamerasRouteContent(onAddCamera = onAddCamera, onOpenLive = onOpenLive)
+        CamerasRouteContent(onAddCamera = onAddCamera)
     }
 }

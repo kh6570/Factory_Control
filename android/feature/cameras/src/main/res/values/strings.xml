@@ -2,6 +2,10 @@
 <!-- In the name of God, the Most Gracious, the Most Merciful -->
 <resources>
     <string name="cameras_title">Cameras</string>
+    <string name="cameras_hint">Turn on Show on Live for the cameras you want on the wall while watching.</string>
+    <string name="cameras_section_on_live">On the Live wall</string>
+    <string name="cameras_section_available">Not on Live yet</string>
+    <string name="cameras_show_on_live">Show on Live</string>
     <string name="cameras_selected_count">%1$d selected</string>
     <string name="cameras_clear_selection">Clear selection</string>
     <string name="cameras_start_selected">Start selected</string>

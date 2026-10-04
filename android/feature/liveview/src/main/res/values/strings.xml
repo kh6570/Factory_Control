@@ -3,12 +3,9 @@
 <resources>
     <string name="liveview_title">Live</string>
     <string name="liveview_title_count">Live · %1$d</string>
-    <string name="liveview_add_cameras">Add cameras</string>
     <string name="liveview_empty_title">No cameras on the wall</string>
-    <string name="liveview_empty_body">Start cameras from the Cameras tab or add a new one.</string>
+    <string name="liveview_empty_body">Start cameras from the Cameras tab.</string>
     <string name="liveview_offline_banner">No network – live video paused</string>
-    <string name="liveview_camera_stopped">Camera stopped</string>
-    <string name="liveview_stop_camera">Stop camera</string>
     <string name="liveview_minimize">Back to grid</string>
     <string name="liveview_page_indicator">%1$d / %2$d</string>
     <string name="liveview_retry">Retry</string>
@@ -33,9 +30,8 @@
     <string name="liveview_error_lost">The connection was lost.</string>
     <string name="liveview_error_unknown">The video couldn\'t play.</string>
 
-    <string name="liveview_settings">Settings</string>
-
     <string name="liveview_doors_title">Doors</string>
+    <string name="liveview_doors_empty">No doors here. Add the ones you want from the Doors tab.</string>
     <plurals name="liveview_doors_count">
         <item quantity="one">%1$d door</item>
         <item quantity="other">%1$d doors</item>
@@ -45,6 +41,7 @@
         <item quantity="other">%1$d unlocked</item>
     </plurals>
     <string name="liveview_door_hold">Hold to open</string>
+    <string name="liveview_door_lock">Lock</string>
     <string name="liveview_door_keep_holding">Keep holding…</string>
     <string name="liveview_door_action_confirm">Confirm…</string>
     <string name="liveview_door_status_locked">Locked</string>

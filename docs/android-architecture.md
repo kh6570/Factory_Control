@@ -96,7 +96,7 @@ Status: **Empty** = build file only. **Started** = some code. **Done** = done wi
 | --- | --- | --- | --- |
 | `:core:data` | Repository impls, `EventStream` router, `ServerCameraSource`, sync workers (D14) | domain, model, common, network, database, datastore, security | Started (local camera repositories, `DirectLanCameraSource`) |
 | `:core:network` | Retrofit APIs, OkHttp, WebSocket, `CertificatePinner`, auth interceptor, token refresh, `NetworkMonitor` | model, common, domain, security | Started (`NetworkMonitor` only) |
-| `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Started (cameras, active sessions) |
+| `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Started (cameras, active sessions, doors) |
 | `:core:datastore` | DataStore settings: tile limits, stream quality, player choice | model, common | Started (hold-to-open time) |
 | `:core:security` | `TokenStore` (Tink + Keystore), `DeviceKey`, `BiometricSigner` exactly as spec D11, encrypted camera passwords | common, domain | Started (camera password cipher, `DeviceKey`, `BiometricDoorSigner`) |
 | `:core:notifications` | FCM service, channels, `AlarmNotifier`, full-screen intent, dedupe | domain, model, common | Empty |
@@ -131,13 +131,13 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 | `:feature:auth` | Login, TOTP, device registration | | Empty |
 | `:feature:dashboard` | Alarms, doors, node health summary | | Empty |
 | `:feature:alarms` | Full-screen alarm, list, acknowledge | | Empty |
-| `:feature:doors` | Door list and detail, hold-to-open, biometric, logs | `:core:security` | Empty |
 | `:feature:playback` | Timeline, recording search, export clip | `:core:video` | Empty |
 | `:feature:recordings` | Clips saved on the phone | | Empty |
 | `:feature:devices` | Node health | | Empty |
 | `:feature:rules` | Admin: sensor to camera links | | Empty |
 | `:feature:users` | Admin: users, roles, device approval | | Empty |
-| `:feature:settings` | Stream quality, tile limits, notifications, about | | Started (hold-to-open time) |
+| `:feature:doors` | Door list and detail, hold-to-open, biometric, logs | `:core:security` | Started (add, edit, remove) |
+| `:feature:settings` | Stream quality, tile limits, notifications, about | | Started (hold time, fingerprint on or off) |
 
 `:feature:camerasettings` from the camera plan is folded into `:feature:cameras`, so there is one camera management screen set.
 

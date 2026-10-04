@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.raghim.herz.R
 import com.raghim.herz.core.designsystem.icon.HerzIcons
 import com.raghim.herz.feature.cameras.navigation.CamerasRoute
+import com.raghim.herz.feature.doors.navigation.DoorsRoute
 import com.raghim.herz.feature.liveview.navigation.LiveViewRoute
 import kotlin.reflect.KClass
 
@@ -19,5 +20,6 @@ enum class TopLevelDestination(
     val icon: () -> ImageVector,
 ) {
     CAMERAS(CamerasRoute::class, R.string.nav_cameras, { HerzIcons.Videocam }),
+    DOORS(DoorsRoute::class, R.string.nav_doors, { HerzIcons.Key }),
     LIVE(LiveViewRoute::class, R.string.nav_live, { HerzIcons.GridView }),
 }

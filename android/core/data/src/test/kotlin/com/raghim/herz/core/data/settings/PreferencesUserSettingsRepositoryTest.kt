@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -32,6 +33,7 @@ class PreferencesUserSettingsRepositoryTest {
     fun `defaults to 2 s`() = runTest {
         assertEquals(HoldToOpen.Default, repository.holdToOpen.first())
         assertEquals(2.seconds, HoldToOpen.Default)
+        assertTrue(repository.requireFingerprint.first())
     }
 
     @Test

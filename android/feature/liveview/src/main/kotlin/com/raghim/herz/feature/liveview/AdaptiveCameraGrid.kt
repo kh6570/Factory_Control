@@ -37,7 +37,6 @@ internal fun AdaptiveCameraGrid(
     playbackEnabled: Boolean,
     player: (String) -> VideoPlayer,
     onTap: (String) -> Unit,
-    onStop: (String) -> Unit,
     onRetry: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -79,7 +78,6 @@ internal fun AdaptiveCameraGrid(
                     isLive = isLive,
                     showVideo = playbackEnabled,
                     onTap = { onTap(id) },
-                    onStop = { onStop(id) },
                     onRetry = { onRetry(id) },
                     modifier = Modifier.animateItem(fadeOutSpec = null),
                 )

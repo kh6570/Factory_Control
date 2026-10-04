@@ -22,6 +22,7 @@ object TestDoors {
         n: Int,
         linkedCameraIds: Set<String> = emptySet(),
         isOnline: Boolean = true,
+        onLivePanel: Boolean = false,
     ) = Door(
         id = "door$n",
         name = "Door $n",
@@ -29,6 +30,7 @@ object TestDoors {
         linkedCameraIds = linkedCameraIds,
         contact = DoorContact.CLOSED,
         isOnline = isOnline,
+        onLivePanel = onLivePanel,
     )
 }
 
@@ -49,15 +51,52 @@ class FakeDoorRepository(initial: List<Door> = emptyList()) : DoorRepository {
 
     override suspend fun challenge(doorId: String): AppResult<DoorChallenge> = challengeResult(doorId)
 
+    val released = mutableListOf<String>()
+    private var nextId = 1
+
     override suspend fun open(command: SignedDoorCommand): AppResult<Unit> {
         opened += command
         openGate?.await()
-        if (openResult is AppResult.Success) {
-            state.update { doors ->
-                doors.map { if (it.id == command.doorId) it.copy(lock = LockState.UNLOCKED) else it }
+        if (openResult is AppResult.Success) unlock(command.doorId)
+        return openResult
+    }
+
+    override suspend fun release(doorId: String): AppResult<Unit> {
+        released += doorId
+        openGate?.await()
+        if (openResult is AppResult.Success) unlock(doorId)
+        return openResult
+    }
+
+    override suspend fun add(name: String, area: String?): Door {
+        val door = Door(id = "added${nextId++}", name = name, area = area, contact = DoorContact.CLOSED)
+        state.update { it + door }
+        return door
+    }
+
+    override suspend fun update(id: String, name: String, area: String?) {
+        state.update { doors -> doors.map { if (it.id == id) it.copy(name = name, area = area) else it } }
+    }
+
+    override suspend fun setOnLivePanel(id: String, shown: Boolean) {
+        state.update { doors -> doors.map { if (it.id == id) it.copy(onLivePanel = shown) else it } }
+    }
+
+    override suspend fun lock(doorId: String): AppResult<Unit> {
+        state.update { doors ->
+            doors.map {
+                if (it.id == doorId) it.copy(lock = LockState.LOCKED, contact = DoorContact.CLOSED, unlockedUntil = null) else it
             }
         }
-        return openResult
+        return AppResult.Success(Unit)
+    }
+
+    override suspend fun remove(id: String) {
+        state.update { doors -> doors.filterNot { it.id == id } }
+    }
+
+    private fun unlock(doorId: String) {
+        state.update { doors -> doors.map { if (it.id == doorId) it.copy(lock = LockState.UNLOCKED) else it } }
     }
 }
 
@@ -74,11 +113,20 @@ class FakeDoorCommandSigner : DoorCommandSigner {
     }
 }
 
-class FakeUserSettingsRepository(holdToOpen: Duration = HoldToOpen.Default) : UserSettingsRepository {
+class FakeUserSettingsRepository(
+    holdToOpen: Duration = HoldToOpen.Default,
+    requireFingerprint: Boolean = true,
+) : UserSettingsRepository {
     val state = MutableStateFlow(holdToOpen)
+    val fingerprint = MutableStateFlow(requireFingerprint)
     override val holdToOpen: Flow<Duration> = state
+    override val requireFingerprint: Flow<Boolean> = fingerprint
 
     override suspend fun setHoldToOpen(duration: Duration) {
         state.value = duration
+    }
+
+    override suspend fun setRequireFingerprint(required: Boolean) {
+        fingerprint.value = required
     }
 }

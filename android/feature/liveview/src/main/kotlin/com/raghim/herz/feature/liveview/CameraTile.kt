@@ -17,12 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,7 +46,6 @@ import com.raghim.herz.core.video.VideoScale
 
 internal val WallBackground = Color(0xFF07090C)
 private val TileShape = RoundedCornerShape(6.dp)
-private val ScrimColor = Color.Black.copy(alpha = 0.55f)
 
 /**
  * One camera on the wall. [isLive] = inside the live budget; [showVideo] = this tile may attach
@@ -64,7 +58,6 @@ internal fun CameraTile(
     isLive: Boolean,
     showVideo: Boolean,
     onTap: () -> Unit,
-    onStop: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -94,7 +87,6 @@ internal fun CameraTile(
             streamState = camera.state,
             modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
         )
-        StopButton(onStop, Modifier.align(Alignment.TopEnd))
         Row(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -114,26 +106,6 @@ internal fun CameraTile(
             )
             SourceBadge(camera.source)
         }
-    }
-}
-
-@Composable
-private fun StopButton(onStop: () -> Unit, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .clickable(role = Role.Button, onClick = onStop)
-            .padding(8.dp)
-            .background(ScrimColor, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            Icons.Default.Close,
-            contentDescription = stringResource(R.string.liveview_stop_camera),
-            tint = Color.White,
-            modifier = Modifier.size(16.dp),
-        )
     }
 }
 

@@ -10,4 +10,7 @@
     <string name="settings_try_it">Try it here. This button opens nothing.</string>
     <string name="settings_try_label">Hold to test</string>
     <string name="settings_try_holding">Keep holding…</string>
+    <string name="settings_fingerprint">Ask for fingerprint</string>
+    <string name="settings_fingerprint_on">After the hold, the phone asks for your fingerprint before a door opens.</string>
+    <string name="settings_fingerprint_off">The hold alone opens a door. Anyone holding the phone can open one.</string>
 </resources>

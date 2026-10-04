@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="doors_title">Doors</string>
+    <string name="doors_settings">Door settings</string>
+    <string name="doors_show_on_live">Show on Live</string>
+    <string name="doors_section_on_live">On the Live panel</string>
+    <string name="doors_section_available">Not on Live yet</string>
+    <string name="doors_hint">Turn on Show on Live for the doors you want in the panel while watching cameras.</string>
+    <string name="doors_add">Add door</string>
+    <string name="doors_add_title">New door</string>
+    <string name="doors_edit">Edit</string>
+    <string name="doors_edit_title">Edit door</string>
+    <string name="doors_save">Save</string>
+    <string name="doors_cancel">Cancel</string>
+    <string name="doors_remove">Remove</string>
+    <string name="doors_remove_title">Remove this door?</string>
+    <string name="doors_remove_body">%1$s will disappear from the list. The lock itself is not changed.</string>
+    <string name="doors_name_label">Name</string>
+    <string name="doors_area_label">Area (optional)</string>
+    <string name="doors_no_area">No area</string>
+    <string name="doors_more">Options for %1$s</string>
+    <string name="doors_empty_title">No doors yet</string>
+    <string name="doors_empty_body">Add a door, then turn on Show on Live to put it in the panel.</string>
+</resources>

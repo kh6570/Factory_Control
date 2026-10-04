@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,7 +62,6 @@ internal fun FullscreenCamera(
     player: (String) -> VideoPlayer,
     onSwipe: (String) -> Unit,
     onMinimize: () -> Unit,
-    onStop: (String) -> Unit,
     onRetry: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -142,7 +140,6 @@ internal fun FullscreenCamera(
                     page = pagerState.settledPage + 1,
                     pageCount = tiles.size,
                     onMinimize = onMinimize,
-                    onStop = { onStop(current.cameraId) },
                 )
             }
         }
@@ -156,7 +153,6 @@ private fun FullscreenControls(
     page: Int,
     pageCount: Int,
     onMinimize: () -> Unit,
-    onStop: () -> Unit,
 ) {
     val playerState by player.state.collectAsStateWithLifecycle()
     Box(Modifier.fillMaxSize()) {
@@ -192,13 +188,6 @@ private fun FullscreenControls(
                 )
                 CameraStatusBadge(isLive = true, playerState = playerState, streamState = camera.state)
                 SourceBadge(camera.source)
-            }
-            IconButton(onClick = onStop) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = stringResource(R.string.liveview_stop_camera),
-                    tint = Color.White,
-                )
             }
         }
         if (pageCount > 1) {

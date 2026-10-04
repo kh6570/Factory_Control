@@ -3,7 +3,9 @@ package com.raghim.herz.feature.settings
 
 import com.raghim.herz.core.domain.door.HoldToOpen
 import com.raghim.herz.core.domain.door.ObserveHoldToOpenUseCase
+import com.raghim.herz.core.domain.door.ObserveRequireFingerprintUseCase
 import com.raghim.herz.core.domain.door.SetHoldToOpenUseCase
+import com.raghim.herz.core.domain.door.SetRequireFingerprintUseCase
 import com.raghim.herz.core.testing.FakeUserSettingsRepository
 import com.raghim.herz.core.testing.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,7 +28,12 @@ class SettingsViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val settings = FakeUserSettingsRepository()
-    private fun viewModel() = SettingsViewModel(ObserveHoldToOpenUseCase(settings), SetHoldToOpenUseCase(settings))
+    private fun viewModel() = SettingsViewModel(
+        observeHoldToOpen = ObserveHoldToOpenUseCase(settings),
+        observeRequireFingerprint = ObserveRequireFingerprintUseCase(settings),
+        setHoldToOpen = SetHoldToOpenUseCase(settings),
+        setRequireFingerprint = SetRequireFingerprintUseCase(settings),
+    )
 
     @Test
     fun `starts loading, then shows the stored hold time`() = runTest {
@@ -49,5 +56,18 @@ class SettingsViewModelTest {
 
         viewModel.onIntent(SettingsIntent.SetHoldToOpen(9.seconds))
         assertEquals(3.seconds, viewModel.state.value.holdToOpen)
+    }
+
+    @Test
+    fun `fingerprint is on until the user turns it off`() = runTest {
+        val viewModel = viewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.state.collect() }
+
+        assertTrue(viewModel.state.value.requireFingerprint)
+
+        viewModel.onIntent(SettingsIntent.SetRequireFingerprint(false))
+
+        assertFalse(viewModel.state.value.requireFingerprint)
+        assertFalse(settings.fingerprint.value)
     }
 }

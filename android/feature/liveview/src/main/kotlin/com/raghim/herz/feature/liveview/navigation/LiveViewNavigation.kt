@@ -20,14 +20,10 @@ fun NavController.navigateToLiveView(navOptions: NavOptions? = null, alarmId: St
  * navigation bar or rail then, and shows it again on false.
  */
 fun NavGraphBuilder.liveViewScreen(
-    onAddCameras: () -> Unit,
-    onOpenSettings: () -> Unit,
     onFullscreenChanged: (Boolean) -> Unit,
 ) {
     composable<LiveViewRoute> {
         ActiveCamerasRoute(
-            onAddCameras = onAddCameras,
-            onOpenSettings = onOpenSettings,
             onFullscreenChanged = onFullscreenChanged,
         )
     }

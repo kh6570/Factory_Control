@@ -5,16 +5,20 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.raghim.herz.core.database.dao.ActiveSessionDao
 import com.raghim.herz.core.database.dao.CameraDao
+import com.raghim.herz.core.database.dao.DoorDao
 import com.raghim.herz.core.database.model.ActiveSessionEntity
 import com.raghim.herz.core.database.model.CameraEntity
+import com.raghim.herz.core.database.model.DoorEntity
 
 @Database(
-    entities = [CameraEntity::class, ActiveSessionEntity::class],
-    version = 1,
+    entities = [CameraEntity::class, ActiveSessionEntity::class, DoorEntity::class],
+    version = 3,
     exportSchema = true,
 )
 abstract class HerzDatabase : RoomDatabase() {
     abstract fun cameraDao(): CameraDao
 
     abstract fun activeSessionDao(): ActiveSessionDao
+
+    abstract fun doorDao(): DoorDao
 }

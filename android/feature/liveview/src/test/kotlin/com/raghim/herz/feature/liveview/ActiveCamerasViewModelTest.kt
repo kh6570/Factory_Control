@@ -6,7 +6,6 @@ import androidx.lifecycle.SavedStateHandle
 import com.raghim.herz.core.domain.camera.NetworkMonitor
 import com.raghim.herz.core.domain.camera.ObserveActiveCamerasUseCase
 import com.raghim.herz.core.domain.camera.ObserveNetworkModeUseCase
-import com.raghim.herz.core.domain.camera.StopCameraUseCase
 import com.raghim.herz.core.model.NetworkMode
 import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
@@ -50,7 +49,6 @@ class ActiveCamerasViewModelTest {
     ) = ActiveCamerasViewModel(
         observeActiveCameras = ObserveActiveCamerasUseCase(repository),
         observeNetworkMode = ObserveNetworkModeUseCase(monitor),
-        stopCamera = StopCameraUseCase(repository),
         pool = pool,
         savedState = savedState,
     )
@@ -142,30 +140,6 @@ class ActiveCamerasViewModelTest {
     }
 
     @Test
-    fun `stopping the maximized camera removes it and returns to the grid`() = runTest {
-        val vm = viewModel()
-        subscribe(vm)
-        vm.onIntent(ActiveCamerasIntent.Maximize("cam03"))
-
-        vm.onIntent(ActiveCamerasIntent.Stop("cam03"))
-
-        assertFalse(vm.state.value.tiles.any { it.cameraId == "cam03" })
-        assertNull(vm.state.value.maximizedCameraId)
-    }
-
-    @Test
-    fun `stopping another camera keeps the maximized one`() = runTest {
-        val vm = viewModel()
-        subscribe(vm)
-        vm.onIntent(ActiveCamerasIntent.Maximize("cam03"))
-
-        vm.onIntent(ActiveCamerasIntent.Stop("cam05"))
-
-        assertEquals(5, vm.state.value.tiles.size)
-        assertEquals("cam03", vm.state.value.maximizedCameraId)
-    }
-
-    @Test
     fun `maximized camera is cleared when it leaves the wall`() = runTest {
         val savedState = SavedStateHandle()
         val vm = viewModel(savedState)
@@ -203,13 +177,13 @@ class ActiveCamerasViewModelTest {
     }
 
     @Test
-    fun `players of stopped cameras are released`() = runTest {
+    fun `players of cameras that leave the wall are released`() = runTest {
         val vm = viewModel()
         subscribe(vm)
         vm.player("cam01")
         vm.player("cam02")
 
-        vm.onIntent(ActiveCamerasIntent.Stop("cam01"))
+        repository.state.update { list -> list.filterNot { it.cameraId == "cam01" } }
 
         assertTrue(fake("cam01").released)
         assertFalse(fake("cam02").released)

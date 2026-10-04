@@ -6,9 +6,12 @@ import com.raghim.herz.core.common.AppClock
 import com.raghim.herz.core.common.AppError
 import com.raghim.herz.core.common.AppResult
 import com.raghim.herz.core.domain.camera.ObserveActiveCamerasUseCase
+import com.raghim.herz.core.domain.door.LockDoorUseCase
 import com.raghim.herz.core.domain.door.ObserveDoorsUseCase
 import com.raghim.herz.core.domain.door.ObserveHoldToOpenUseCase
+import com.raghim.herz.core.domain.door.ObserveRequireFingerprintUseCase
 import com.raghim.herz.core.domain.door.OpenDoorUseCase
+import com.raghim.herz.core.model.DoorContact
 import com.raghim.herz.core.model.LockState
 import com.raghim.herz.core.testing.FakeActiveCamerasRepository
 import com.raghim.herz.core.testing.FakeDoorCommandSigner
@@ -42,9 +45,10 @@ class DoorPanelViewModelTest {
     private val active = FakeActiveCamerasRepository(initial = listOf(TestCameras.active(cameras[1])))
     private val doors = FakeDoorRepository(
         listOf(
-            TestDoors.door(1),
-            TestDoors.door(2, linkedCameraIds = setOf(cameras[1].id)),
-            TestDoors.door(3, isOnline = false),
+            TestDoors.door(1, onLivePanel = true),
+            TestDoors.door(2, linkedCameraIds = setOf(cameras[1].id), onLivePanel = true),
+            TestDoors.door(3, isOnline = false, onLivePanel = true),
+            TestDoors.door(4),
         ),
     )
     private val signer = FakeDoorCommandSigner()
@@ -54,7 +58,9 @@ class DoorPanelViewModelTest {
         observeDoors = ObserveDoorsUseCase(doors),
         observeActiveCameras = ObserveActiveCamerasUseCase(active),
         observeHoldToOpen = ObserveHoldToOpenUseCase(settings),
-        openDoor = OpenDoorUseCase(doors, signer, AppClock { TestCameras.epoch }),
+        observeRequireFingerprint = ObserveRequireFingerprintUseCase(settings),
+        openDoor = OpenDoorUseCase(doors, signer, settings, AppClock { TestCameras.epoch }),
+        lockDoor = LockDoorUseCase(doors),
     )
 
     private fun TestScope.subscribe(vm: DoorPanelViewModel) {
@@ -68,8 +74,25 @@ class DoorPanelViewModelTest {
 
         val items = vm.state.value.doors
         assertEquals(listOf("door2", "door1", "door3"), items.map { it.door.id })
+        assertFalse(vm.state.value.doors.any { it.door.id == "door4" })
         assertTrue(items[0].onWall)
         assertFalse(items[1].onWall)
+    }
+
+    @Test
+    fun `an open door moves to the bottom, and locking brings it back`() = runTest {
+        val vm = viewModel()
+        subscribe(vm)
+        doors.state.value = doors.state.value.map { door ->
+            if (door.id == "door1") door.copy(lock = LockState.UNLOCKED, contact = DoorContact.OPEN) else door
+        }
+
+        assertEquals(listOf("door2", "door3", "door1"), vm.state.value.doors.map { it.door.id })
+
+        vm.onIntent(DoorPanelIntent.Lock("door1"))
+
+        assertEquals(LockState.LOCKED, vm.item("door1").door.lock)
+        assertEquals(listOf("door2", "door1", "door3"), vm.state.value.doors.map { it.door.id })
     }
 
     @Test

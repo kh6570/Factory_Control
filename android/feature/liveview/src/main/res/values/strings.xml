@@ -5,7 +5,10 @@
     <string name="liveview_settings">Grid settings</string>
     <string name="liveview_columns_title">Cameras per row</string>
     <string name="liveview_columns_automatic">Automatic</string>
-    <string name="liveview_columns_count">%1$d per row</string>
+    <plurals name="liveview_columns_count">
+        <item quantity="one">%1$d per row</item>
+        <item quantity="other">%1$d per row</item>
+    </plurals>
     <string name="liveview_done">Done</string>
     <string name="liveview_title_count">Live · %1$d</string>
     <string name="liveview_empty_title">No cameras on the wall</string>

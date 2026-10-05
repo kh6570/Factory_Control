@@ -47,6 +47,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -177,7 +178,7 @@ internal fun ActiveCamerasScreen(
                             if (state.networkMode == NetworkMode.OFFLINE) OfflineBanner()
                             AdaptiveCameraGrid(
                                 tiles = state.tiles,
-                                liveIds = state.liveIds,
+                                liveBudget = state.liveBudget,
                                 gridState = gridState,
                                 chosenColumns = state.gridColumns,
                                 playbackEnabled = !fullscreen,
@@ -215,7 +216,7 @@ private fun GridColumnsDialog(selected: Int?, onSelect: (Int?) -> Unit, onDismis
                 )
                 for (count in LiveGridColumns.MIN..LiveGridColumns.MAX) {
                     GridColumnChoice(
-                        label = stringResource(R.string.liveview_columns_count, count),
+                        label = pluralStringResource(R.plurals.liveview_columns_count, count, count),
                         selected = selected == count,
                         onClick = { onSelect(count) },
                     )

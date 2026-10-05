@@ -57,7 +57,7 @@ private fun previewState(count: Int, mode: NetworkMode = NetworkMode.LAN): Activ
     val budget = if (mode == NetworkMode.CELLULAR) 4 else 9
     return ActiveCamerasUiState(
         tiles = tiles,
-        liveIds = tiles.take(budget).map { it.cameraId }.toSet(),
+        liveBudget = budget,
         networkMode = mode,
         isLoading = false,
     )

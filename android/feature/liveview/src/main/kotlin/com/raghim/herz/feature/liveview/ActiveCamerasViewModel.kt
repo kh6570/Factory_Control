@@ -26,8 +26,8 @@ import javax.inject.Inject
 data class ActiveCamerasUiState(
     /** Alarm cameras first, then manual cameras in start order. */
     val tiles: List<ActiveCamera> = emptyList(),
-    /** Cameras that may decode live video: the first tiles within the network budget, plus the maximized one. */
-    val liveIds: Set<String> = emptySet(),
+    /** How many grid tiles may decode live video at once on this network. The grid spends it on visible tiles. */
+    val liveBudget: Int = 0,
     /** Null = grid view. */
     val maximizedCameraId: String? = null,
     val networkMode: NetworkMode = NetworkMode.LAN,
@@ -65,13 +65,9 @@ class ActiveCamerasViewModel @Inject constructor(
         observeLiveGridColumns(),
     ) { tiles, mode, max, columns ->
         val maxId = max?.takeIf { id -> tiles.any { it.cameraId == id } }
-        val liveIds = buildSet {
-            tiles.take(liveBudget(mode)).forEach { add(it.cameraId) }
-            if (maxId != null) add(maxId)
-        }
         ActiveCamerasUiState(
             tiles = tiles,
-            liveIds = liveIds,
+            liveBudget = liveBudget(mode),
             maximizedCameraId = maxId,
             networkMode = mode,
             gridColumns = columns,

@@ -37,6 +37,26 @@ class GridLayoutTest {
     }
 
     @Test
+    fun `live budget goes to the tiles on screen after scrolling`() {
+        val all = (1..20).map { "cam$it" }
+        val onScreen = (10..15).map { "cam$it" }
+
+        assertEquals(setOf("cam10", "cam11", "cam12", "cam13"), liveTileIds(onScreen, all, budget = 4))
+    }
+
+    @Test
+    fun `before layout the first tiles of the list are live`() {
+        val all = (1..6).map { "cam$it" }
+
+        assertEquals(setOf("cam1", "cam2"), liveTileIds(emptyList(), all, budget = 2))
+    }
+
+    @Test
+    fun `no budget means nothing is live`() {
+        assertEquals(emptySet<String>(), liveTileIds(listOf("cam1"), listOf("cam1"), budget = 0))
+    }
+
+    @Test
     fun `no cameras still gives one column`() {
         assertEquals(1, gridColumns(0, wide = false))
         assertEquals(1, gridColumns(0, wide = true))

@@ -91,21 +91,22 @@ class ActiveCamerasViewModelTest {
         subscribe(vm)
 
         assertEquals(6, vm.state.value.tiles.size)
-        assertEquals(setOf("cam01", "cam02", "cam03", "cam04"), vm.state.value.liveIds)
+        assertEquals(4, vm.state.value.liveBudget)
 
         network.state.value = NetworkMode.OFFLINE
-        assertEquals(emptySet<String>(), vm.state.value.liveIds)
+        assertEquals(0, vm.state.value.liveBudget)
     }
 
     @Test
-    fun `maximized camera is always live`() = runTest {
+    fun `a camera past the budget can still be maximized and plays the main stream`() = runTest {
         network.state.value = NetworkMode.CELLULAR
         val vm = viewModel()
         subscribe(vm)
 
         vm.onIntent(ActiveCamerasIntent.Maximize("cam06"))
 
-        assertEquals(setOf("cam01", "cam02", "cam03", "cam04", "cam06"), vm.state.value.liveIds)
+        assertEquals("cam06", vm.state.value.maximizedCameraId)
+        assertEquals(StreamQuality.MAIN, fake("cam06").quality.value)
     }
 
     @Test
@@ -164,7 +165,7 @@ class ActiveCamerasViewModelTest {
         subscribe(vm)
 
         assertEquals("cam02", vm.state.value.maximizedCameraId)
-        assertTrue("cam02" in vm.state.value.liveIds)
+        assertEquals(9, vm.state.value.liveBudget)
     }
 
     @Test

@@ -14,7 +14,10 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -27,12 +30,13 @@ private val TileGap = 4.dp
 
 /**
  * The wall. Tiles are composed only while visible, so off-screen tiles are paused by
- * [PlaybackEffect]. [playbackEnabled] is false while a camera is maximized.
+ * [PlaybackEffect]. [liveBudget] goes to the tiles on screen, so scrolling down to more cameras
+ * plays those instead of showing them paused. [playbackEnabled] is false while a camera is maximized.
  */
 @Composable
 internal fun AdaptiveCameraGrid(
     tiles: List<ActiveCamera>,
-    liveIds: Set<String>,
+    liveBudget: Int,
     gridState: LazyGridState,
     /** Null lets the wall pick the column count from the screen size. */
     chosenColumns: Int?,
@@ -58,6 +62,16 @@ internal fun AdaptiveCameraGrid(
             maxHeight = maxHeight.value,
             gap = TileGap.value,
         ).dp
+        val currentTiles by rememberUpdatedState(tiles)
+        val liveIds by remember(gridState, liveBudget) {
+            derivedStateOf {
+                liveTileIds(
+                    visibleIds = gridState.layoutInfo.visibleItemsInfo.mapNotNull { it.key as? String },
+                    allIds = currentTiles.map { it.cameraId },
+                    budget = liveBudget,
+                )
+            }
+        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             state = gridState,

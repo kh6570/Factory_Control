@@ -47,6 +47,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Plays one camera's RTSP stream with ExoPlayer and renders it into a TextureView.
@@ -54,6 +56,11 @@ import kotlin.math.roundToInt
  * Main thread only: create, call and release this class on the main thread. The
  * ExoPlayer is created lazily on the main looper and all its callbacks arrive there,
  * so no state here needs synchronisation.
+ *
+ * Resource bounds for a large wall: the ExoPlayer (decoder, sockets, playback thread) exists only
+ * while playing and for [IDLE_RELEASE_MS] after a pause, so cameras scrolled away or behind the
+ * fullscreen view hold nothing. A stream stuck connecting longer than [STALL_TIMEOUT_MS] fails
+ * and reconnects with backoff, so no tile stays on "Connecting" forever.
  */
 @OptIn(UnstableApi::class)
 class Media3RtspPlayer(
@@ -81,6 +88,11 @@ class Media3RtspPlayer(
     private var exoPlayer: ExoPlayer? = null
     private var connectJob: Job? = null
     private var reconnectJob: Job? = null
+    private var stallJob: Job? = null
+    private var idleReleaseJob: Job? = null
+
+    /** The view currently showing this camera. Attached when a player exists; never creates one. */
+    private var textureView: TextureView? = null
 
     /** True between play() and pause()/release(); drives reconnects. */
     private var wanted = false
@@ -95,10 +107,14 @@ class Media3RtspPlayer(
             when (playbackState) {
                 Player.STATE_READY -> {
                     backoff.reset()
+                    stallJob?.cancel()
                     _state.value = PlayerState.Playing
                 }
                 Player.STATE_BUFFERING ->
-                    if (_state.value == PlayerState.Playing) _state.value = PlayerState.Connecting
+                    if (_state.value == PlayerState.Playing) {
+                        _state.value = PlayerState.Connecting
+                        watchForStall()
+                    }
                 Player.STATE_ENDED -> fail(PlayerError.Lost)
                 Player.STATE_IDLE -> Unit
             }
@@ -134,6 +150,11 @@ class Media3RtspPlayer(
         if (released) return
         stopPlayback()
         _state.value = PlayerState.Idle
+        idleReleaseJob?.cancel()
+        idleReleaseJob = scope.launch {
+            delay(IDLE_RELEASE_MS)
+            if (!wanted) releaseExoPlayer()
+        }
     }
 
     override fun retry() {
@@ -146,12 +167,10 @@ class Media3RtspPlayer(
         if (released) return
         released = true
         stopPlayback()
+        idleReleaseJob?.cancel()
         scope.cancel()
-        exoPlayer?.let { player ->
-            player.removeListener(listener)
-            player.release()
-        }
-        exoPlayer = null
+        releaseExoPlayer()
+        textureView = null
         _state.value = PlayerState.Idle
     }
 
@@ -170,8 +189,16 @@ class Media3RtspPlayer(
             AndroidView(
                 factory = { TextureView(it) },
                 modifier = viewModifier,
-                onRelease = { exoPlayer?.clearVideoTextureView(it) },
-                update = { if (!released) obtainPlayer().setVideoTextureView(it) },
+                onRelease = { view ->
+                    if (textureView === view) textureView = null
+                    exoPlayer?.clearVideoTextureView(view)
+                },
+                update = { view ->
+                    if (!released) {
+                        textureView = view
+                        exoPlayer?.setVideoTextureView(view)
+                    }
+                },
             )
         }
     }
@@ -180,8 +207,12 @@ class Media3RtspPlayer(
     private fun connect(quality: StreamQuality) {
         connectJob?.cancel()
         reconnectJob?.cancel()
+        idleReleaseJob?.cancel()
         loadedQuality = quality
-        if (_state.value != PlayerState.Playing) _state.value = PlayerState.Connecting
+        if (_state.value != PlayerState.Playing) {
+            _state.value = PlayerState.Connecting
+            watchForStall()
+        }
         connectJob = scope.launch {
             when (val result = resolve(quality)) {
                 is AppResult.Success -> start(result.value)
@@ -209,6 +240,7 @@ class Media3RtspPlayer(
     }
 
     private fun fail(error: PlayerError) {
+        stallJob?.cancel()
         exoPlayer?.stop()
         _state.value = PlayerState.Error(error)
         if (wanted && error != PlayerError.Unauthorized && error != PlayerError.Unsupported) {
@@ -216,9 +248,20 @@ class Media3RtspPlayer(
         }
     }
 
+    /** Fails the stream if it is still connecting after [STALL_TIMEOUT_MS]; fail() then reconnects. */
+    private fun watchForStall() {
+        stallJob?.cancel()
+        stallJob = scope.launch {
+            delay(STALL_TIMEOUT_MS)
+            if (wanted && _state.value == PlayerState.Connecting) fail(PlayerError.Lost)
+        }
+    }
+
+    /** Backoff plus up to 20 % jitter, so many offline cameras do not all retry in the same instant. */
     private fun scheduleReconnect() {
         reconnectJob?.cancel()
-        val wait = backoff.next()
+        val base = backoff.next()
+        val wait = base + (base.inWholeMilliseconds * Random.nextDouble(0.0, RECONNECT_JITTER)).milliseconds
         reconnectJob = scope.launch {
             delay(wait)
             if (wanted) connect(_quality.value)
@@ -230,7 +273,17 @@ class Media3RtspPlayer(
         loadedQuality = null
         connectJob?.cancel()
         reconnectJob?.cancel()
+        stallJob?.cancel()
         exoPlayer?.stop()
+    }
+
+    private fun releaseExoPlayer() {
+        exoPlayer?.let { player ->
+            textureView?.let(player::clearVideoTextureView)
+            player.removeListener(listener)
+            player.release()
+        }
+        exoPlayer = null
     }
 
     private fun obtainPlayer(): ExoPlayer = exoPlayer ?: createPlayer().also { exoPlayer = it }
@@ -254,11 +307,15 @@ class Media3RtspPlayer(
                     .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, true)
                     .build()
                 addListener(listener)
+                textureView?.let(::setVideoTextureView)
             }
     }
 
     private companion object {
         const val TIMEOUT_MS = 8_000L
+        const val STALL_TIMEOUT_MS = 15_000L
+        const val IDLE_RELEASE_MS = 20_000L
+        const val RECONNECT_JITTER = 0.2
         const val MIN_BUFFER_MS = 500
         const val MAX_BUFFER_MS = 2_000
         const val BUFFER_FOR_PLAYBACK_MS = 250

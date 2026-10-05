@@ -21,6 +21,15 @@ fun resolvedGridColumns(count: Int, chosen: Int?, wide: Boolean): Int {
     return wanted.coerceIn(1, count)
 }
 
+/**
+ * Tiles allowed to decode live video: the first [budget] tiles on screen, top to bottom. Before the
+ * grid has been laid out [visibleIds] is empty, so the first tiles of the list are used instead.
+ */
+fun liveTileIds(visibleIds: List<String>, allIds: List<String>, budget: Int): Set<String> {
+    val candidates = visibleIds.ifEmpty { allIds }
+    return candidates.take(budget.coerceAtLeast(0)).toSet()
+}
+
 internal const val TILE_ASPECT_RATIO = 16f / 9f
 
 /** Narrowest grid, as a share of the available width, before we scroll instead of shrinking. */

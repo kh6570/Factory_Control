@@ -71,7 +71,12 @@ class SimulatedDoorRepository @Inject constructor(
             nonce = UUID.randomUUID().toString(),
             expiresAt = clock.now().plus(CHALLENGE_TTL.toJavaDuration()),
         )
-        pendingLock.withLock { pending[challenge.nonce] = challenge }
+        pendingLock.withLock {
+            // A cancelled fingerprint prompt never redeems its nonce; drop expired ones so the map stays bounded.
+            val now = clock.now()
+            pending.values.removeAll { !now.isBefore(it.expiresAt) }
+            pending[challenge.nonce] = challenge
+        }
         return AppResult.Success(challenge)
     }
 

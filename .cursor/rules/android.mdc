@@ -22,8 +22,21 @@ In the name of God, the Most Gracious, the Most Merciful
 - Write unit tests for every ViewModel and use case (JUnit + Turbine + fakes in :core:testing).
 - Small steps: one module or one feature per task.
 - On Windows the wrapper command is gradlew.bat. ./gradlew also works in PowerShell from android/.
+- Report honestly what was verified and what was not (for example "not tested with real cameras"). Never claim a check ran if it did not.
 
 # Security (do not simplify)
 - Never log tokens, passwords or full URLs with credentials.
 - Do not disable certificate pinning or allow cleartext, not even for testing. Use the dev flavor config instead.
 - The DeviceKey / BiometricPrompt code must follow spec D11 exactly.
+
+# Reliability (do not skip)
+The app runs a wall of many cameras and doors for hours. Design every change for 50 cameras and 1000 taps, not for the demo with 2.
+- Owned resources: every socket, ExoPlayer/decoder, MulticastLock, network callback, file and coroutine scope has one owner that closes it, in `finally`, `use`, `awaitClose`, `onDispose` or `release()`.
+- Bounded growth: anything that grows with cameras, doors or user actions (players, maps, caches, pending requests, retries) has a cap or a cleanup. Expired or unused entries are removed.
+- Heavy media lives only while needed: release players and connections when paused, off screen or in the background (after a short grace period). UI code attaches to an existing player; it never creates one.
+- No endless waits: every network call has connect, read and overall timeouts. No visible state such as "Connecting" or "Unlocking" may last forever; a watchdog turns it into an error the user can see.
+- Retries: exponential backoff with a cap and jitter, stopped when the work is no longer wanted, and no retry for errors that cannot succeed (wrong login, unsupported format).
+- Coroutines: only in an owned scope (viewModelScope, injected @AppScope, or a class scope cancelled in release()). Never GlobalScope. Loops check cancellation.
+- Main thread: no blocking I/O and no heavy work in composition. Use the IO or Default dispatcher.
+- Limits (live tiles, scan parallelism, buffers, timeouts) are named constants with a comment, taken from the spec where it gives numbers.
+- For changes to video, network, discovery or doors: say in the summary what is opened, who closes it, the timeouts, and what happens with many items. Add a unit test for the limit or cleanup when it can run on the JVM.

@@ -81,6 +81,16 @@ class SimulatedDoorRepositoryTest {
     }
 
     @Test
+    fun `unused challenges expire and a fresh one still works`() = runTest {
+        val repository = repository()
+        repeat(50) { repository.challenge("D01") }
+
+        advanceTimeBy(31_000)
+
+        assertEquals(AppResult.Success(Unit), repository.open(repository.signedChallenge("D01")))
+    }
+
+    @Test
     fun `a bad signature is refused`() = runTest {
         val repository = repository()
         validSignature = false

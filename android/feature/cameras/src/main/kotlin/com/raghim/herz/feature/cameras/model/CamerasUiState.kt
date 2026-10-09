@@ -35,6 +35,9 @@ sealed interface CamerasIntent {
     data class RequestRemove(val id: String) : CamerasIntent
     data object ConfirmRemove : CamerasIntent
     data object DismissDialog : CamerasIntent
+
+    /** New order of one section: cameras on the wall, or cameras that are not. */
+    data class Move(val onLive: Boolean, val orderedIds: List<String>) : CamerasIntent
 }
 
 sealed interface CamerasEffect {

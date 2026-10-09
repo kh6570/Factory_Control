@@ -46,6 +46,7 @@ class OfflineFirstCameraRepository @Inject constructor(
                 manufacturer = info.manufacturer,
                 model = info.model,
                 addedAt = Instant.ofEpochMilli(clock.now().toEpochMilli()),
+                sortOrder = cameraDao.maxSortOrder() + 1,
             )
             cameraDao.upsert(
                 camera.toEntity(
@@ -62,6 +63,10 @@ class OfflineFirstCameraRepository @Inject constructor(
 
     override suspend fun remove(id: String) = withContext(io) {
         cameraDao.delete(id)
+    }
+
+    override suspend fun reorder(idsInOrder: List<String>) = withContext(io) {
+        idsInOrder.forEachIndexed { index, id -> cameraDao.setSortOrder(id, index) }
     }
 
     /** Returns null when nothing is stored or the ciphertext can no longer be decrypted (key lost). */

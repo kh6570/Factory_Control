@@ -7,6 +7,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navOptions
+import com.raghim.herz.feature.alarms.navigation.navigateToSensors
+import com.raghim.herz.feature.alarms.navigation.sensorsScreen
 import com.raghim.herz.feature.cameras.navigation.camerasScreen
 import com.raghim.herz.feature.cameras.navigation.navigateToCameras
 import com.raghim.herz.feature.discovery.navigation.discoveryScreen
@@ -35,6 +37,7 @@ fun HerzNavHost(
             onFullscreenChanged = onFullscreenChanged,
         )
         doorsScreen(onOpenSettings = navController::navigateToSettings)
+        sensorsScreen()
         settingsScreen(onBack = navController::popBackStack)
         camerasScreen(onAddCamera = navController::navigateToDiscovery)
         discoveryScreen(
@@ -54,5 +57,6 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
         TopLevelDestination.LIVE -> navigateToLiveView(options)
         TopLevelDestination.CAMERAS -> navigateToCameras(options)
         TopLevelDestination.DOORS -> navigateToDoors(options)
+        TopLevelDestination.SENSORS -> navigateToSensors(options)
     }
 }

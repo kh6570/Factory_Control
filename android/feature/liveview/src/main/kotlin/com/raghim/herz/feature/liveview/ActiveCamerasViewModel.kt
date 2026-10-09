@@ -9,8 +9,11 @@ import com.raghim.herz.core.domain.camera.ObserveNetworkModeUseCase
 import com.raghim.herz.core.domain.camera.liveBudget
 import com.raghim.herz.core.domain.door.ObserveLiveGridColumnsUseCase
 import com.raghim.herz.core.domain.door.SetLiveGridColumnsUseCase
+import com.raghim.herz.core.domain.sensor.ObserveRingingAlarmUseCase
+import com.raghim.herz.core.domain.sensor.ResetLiveAlarmUseCase
 import com.raghim.herz.core.model.ActiveCamera
 import com.raghim.herz.core.model.NetworkMode
+import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
 import com.raghim.herz.core.video.PlayerPool
 import com.raghim.herz.core.video.VideoPlayer
@@ -33,6 +36,8 @@ data class ActiveCamerasUiState(
     val networkMode: NetworkMode = NetworkMode.LAN,
     /** Null = the app picks the column count. Otherwise 1 to 4 per row. */
     val gridColumns: Int? = null,
+    /** A sensor alarm is ringing, or alarm cameras are still marked on the wall. */
+    val alarmActive: Boolean = false,
     val isLoading: Boolean = true,
 )
 
@@ -42,6 +47,7 @@ sealed interface ActiveCamerasIntent {
     data class SwipeTo(val cameraId: String) : ActiveCamerasIntent
     data class Retry(val cameraId: String) : ActiveCamerasIntent
     data class SetGridColumns(val columns: Int?) : ActiveCamerasIntent
+    data object ResetAlarm : ActiveCamerasIntent
 }
 
 /** Active Cameras wall (spec D10). Maximize is UI state, not a new screen, so players stay alive. */
@@ -50,7 +56,9 @@ class ActiveCamerasViewModel @Inject constructor(
     observeActiveCameras: ObserveActiveCamerasUseCase,
     observeNetworkMode: ObserveNetworkModeUseCase,
     observeLiveGridColumns: ObserveLiveGridColumnsUseCase,
+    observeRingingAlarm: ObserveRingingAlarmUseCase,
     private val setLiveGridColumns: SetLiveGridColumnsUseCase,
+    private val resetLiveAlarm: ResetLiveAlarmUseCase,
     private val pool: PlayerPool,
     private val savedState: SavedStateHandle,
 ) : ViewModel() {
@@ -63,7 +71,8 @@ class ActiveCamerasViewModel @Inject constructor(
         observeNetworkMode(),
         maximized,
         observeLiveGridColumns(),
-    ) { tiles, mode, max, columns ->
+        observeRingingAlarm(),
+    ) { tiles, mode, max, columns, ringing ->
         val maxId = max?.takeIf { id -> tiles.any { it.cameraId == id } }
         ActiveCamerasUiState(
             tiles = tiles,
@@ -71,6 +80,7 @@ class ActiveCamerasViewModel @Inject constructor(
             maximizedCameraId = maxId,
             networkMode = mode,
             gridColumns = columns,
+            alarmActive = ringing != null || tiles.any { it.source == SessionSource.ALARM },
             isLoading = false,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActiveCamerasUiState())
@@ -96,6 +106,7 @@ class ActiveCamerasViewModel @Inject constructor(
             }
             is ActiveCamerasIntent.Retry -> pool.get(intent.cameraId).retry()
             is ActiveCamerasIntent.SetGridColumns -> viewModelScope.launch { setLiveGridColumns(intent.columns) }
+            ActiveCamerasIntent.ResetAlarm -> viewModelScope.launch { resetLiveAlarm() }
         }
     }
 

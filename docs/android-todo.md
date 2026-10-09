@@ -73,9 +73,15 @@ Camera plan step 5. Needs a real phone on the cameras' Wi-Fi.
 
 ## Phase 5: Alarms
 
-- [ ] `:core:notifications`: FCM service, "alarms" channel (USAGE_ALARM), full-screen intent, dedupe WS + FCM by alarm id, push token upload via WorkManager
-- [ ] `:feature:alarms`: `AlarmActivity` (show when locked, turn screen on), list, acknowledge, deep link `fsec://liveview?alarm={id}`
-- [ ] `:feature:liveview`: alarm banner while maximized, alarm cameras first with red border
+Local sensors, with no server and no push. A real node later writes to the same signal interface, and these screens stay.
+
+- [x] Sensors tab: add, rename, remove, and link cameras both ways
+- [x] 20 second test timer. The screens do not know it is a timer
+- [x] Linked cameras jump to the top of Live. Optional blinking red border, then a steady one
+- [x] The phone rings with a chosen sound, or vibration only. Stopping the ring leaves the cameras on the wall
+- [ ] `:core:notifications`: FCM service, dedupe WS + FCM by alarm id, push token upload via WorkManager
+- [ ] `:feature:alarms`: server alarm list, acknowledge, deep link `fsec://liveview?alarm={id}`
+- [ ] `:feature:liveview`: alarm banner while maximized
 - [ ] Onboarding: `POST_NOTIFICATIONS`, full-screen intent permission on Android 14+, DND override, battery exemption, Xiaomi guidance
 - [ ] Test: locked phone, Doze, app killed, 4G + VPN. Target under 2 s
 

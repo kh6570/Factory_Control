@@ -127,6 +127,11 @@ internal fun ActiveCamerasScreen(
                         )
                     },
                     actions = {
+                        if (state.alarmActive) {
+                            TextButton(onClick = { onIntent(ActiveCamerasIntent.ResetAlarm) }) {
+                                Text(stringResource(R.string.liveview_reset_alarm))
+                            }
+                        }
                         IconButton(onClick = { columnsOpen = true }) {
                             Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.liveview_settings))
                         }

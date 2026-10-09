@@ -73,6 +73,50 @@ class LocalActiveCamerasRepositoryTest {
     }
 
     @Test
+    fun raiseAlarmPromotesAManualCameraAndAddsTheOthers() = runTest {
+        val repository = repository()
+        repository.start(listOf("a"))
+        clock.time = clock.time.plusSeconds(30)
+
+        repository.raiseAlarm(listOf("a", "b", "missing"), alarmId = "alarm-1", highlight = true)
+
+        val active = repository.active.first().associateBy { it.cameraId }
+        assertEquals(setOf("a", "b"), active.keys)
+        assertEquals(SessionSource.ALARM, active.getValue("a").source)
+        assertEquals(SessionSource.ALARM, active.getValue("b").source)
+        assertEquals("alarm-1", active.getValue("a").alarmId)
+        assertTrue(active.getValue("a").highlightAlarm)
+        assertTrue(active.getValue("b").highlightAlarm)
+        assertEquals(clock.time.toEpochMilli(), active.getValue("a").startedAt.toEpochMilli())
+    }
+
+    @Test
+    fun raiseAlarmWithNoKnownCamerasLeavesTheWallAlone() = runTest {
+        val repository = repository()
+        repository.start(listOf("a"))
+
+        repository.raiseAlarm(listOf("missing"), alarmId = "alarm-1", highlight = true)
+
+        val camera = repository.active.first().single()
+        assertEquals(SessionSource.MANUAL, camera.source)
+        assertNull(camera.alarmId)
+    }
+
+    @Test
+    fun clearAlarmKeepsTheCamerasAndDropsTheAlarmMark() = runTest {
+        val repository = repository()
+        repository.start(listOf("a"))
+        repository.raiseAlarm(listOf("a", "b"), alarmId = "alarm-1", highlight = true)
+
+        repository.clearAlarm()
+
+        val active = repository.active.first()
+        assertEquals(listOf("a", "b"), active.map { it.cameraId })
+        assertTrue(active.all { it.source == SessionSource.MANUAL })
+        assertTrue(active.all { it.alarmId == null && !it.highlightAlarm })
+    }
+
+    @Test
     fun stopRemovesOnlyThatCamera() = runTest {
         val repository = repository()
         repository.start(listOf("a", "b"))

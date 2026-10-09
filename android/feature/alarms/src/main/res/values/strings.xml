@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="sensors_title">Sensors</string>
+    <string name="sensors_add">Add sensor</string>
+    <string name="sensors_empty_title">No sensors yet</string>
+    <string name="sensors_empty_body">Add a sensor, link the cameras it should start, then try a 20 second test.</string>
+    <string name="sensors_hint">A signal starts the linked cameras on Live and rings the phone. Hold a card and drag it to change the order.</string>
+    <string name="sensors_no_area">No area</string>
+    <string name="sensors_no_cameras">No cameras linked</string>
+    <string name="sensors_link">Cameras</string>
+    <string name="sensors_test">Test signal</string>
+    <string name="sensors_cancel_test">Cancel test</string>
+    <string name="sensors_more">More for %1$s</string>
+    <string name="sensors_edit">Rename</string>
+    <string name="sensors_menu_highlight">Highlight cameras</string>
+    <string name="sensors_menu_alarm">Alarm</string>
+    <string name="sensors_choice_on">On</string>
+    <string name="sensors_choice_off">Off</string>
+    <string name="sensors_highlight_title">Highlight cameras</string>
+    <string name="sensors_highlight_on">On</string>
+    <string name="sensors_highlight_on_body">Blink a red border a few times, then leave it on.</string>
+    <string name="sensors_highlight_off">Off</string>
+    <string name="sensors_highlight_off_body">No red border. The cameras still move to the top.</string>
+    <string name="sensors_highlight_short_on">Highlight on</string>
+    <string name="sensors_highlight_short_off">Highlight off</string>
+    <string name="sensors_alarm_title">Alarm</string>
+    <string name="sensors_alarm_vibration">Vibration only</string>
+    <string name="sensors_alarm_vibration_body">The phone vibrates and stays quiet.</string>
+    <string name="sensors_sound_alarm">Alarm</string>
+    <string name="sensors_sound_alarm_body">The phone’s alarm sound.</string>
+    <string name="sensors_sound_ringtone">Ringtone</string>
+    <string name="sensors_sound_ringtone_body">The phone’s ringtone.</string>
+    <string name="sensors_sound_notification">Notification</string>
+    <string name="sensors_sound_notification_body">The phone’s notification sound.</string>
+    <string name="sensors_style_line">%1$s · %2$s</string>
+    <string name="sensors_close">Close</string>
+    <string name="sensors_remove">Remove</string>
+    <string name="sensors_add_title">New sensor</string>
+    <string name="sensors_edit_title">Rename sensor</string>
+    <string name="sensors_name">Name</string>
+    <string name="sensors_area">Area</string>
+    <string name="sensors_save">Save</string>
+    <string name="sensors_cancel">Cancel</string>
+    <string name="sensors_remove_title">Remove sensor?</string>
+    <string name="sensors_remove_body">%1$s will be removed. Cameras already on Live stay there.</string>
+    <string name="sensors_link_title">Cameras for %1$s</string>
+    <string name="sensors_link_empty">Add cameras on the Cameras tab first.</string>
+    <string name="sensors_link_save">Save</string>
+    <string name="alarm_detected">Something was detected. The linked cameras are on Live.</string>
+    <string name="alarm_stop">Stop alarm</string>
+    <string name="alarm_watch_live">Watch live</string>
+    <plurals name="sensors_linked_cameras">
+        <item quantity="one">%d camera</item>
+        <item quantity="other">%d cameras</item>
+    </plurals>
+    <plurals name="sensors_test_remaining">
+        <item quantity="one">Signal in %d second</item>
+        <item quantity="other">Signal in %d seconds</item>
+    </plurals>
+</resources>

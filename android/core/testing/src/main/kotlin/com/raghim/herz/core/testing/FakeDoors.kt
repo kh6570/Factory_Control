@@ -82,6 +82,14 @@ class FakeDoorRepository(initial: List<Door> = emptyList()) : DoorRepository {
         state.update { doors -> doors.map { if (it.id == id) it.copy(onLivePanel = shown) else it } }
     }
 
+    override suspend fun reorder(idsInOrder: List<String>) {
+        val rank = idsInOrder.withIndex().associate { it.value to it.index }
+        state.update { doors ->
+            doors.map { door -> rank[door.id]?.let { door.copy(sortOrder = it) } ?: door }
+                .sortedWith(compareBy({ it.sortOrder }, { it.name.lowercase() }))
+        }
+    }
+
     override suspend fun lock(doorId: String): AppResult<Unit> {
         state.update { doors ->
             doors.map {

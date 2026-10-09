@@ -4,6 +4,7 @@ package com.raghim.herz.feature.doors
 import com.raghim.herz.core.domain.door.AddDoorUseCase
 import com.raghim.herz.core.domain.door.ObserveDoorsUseCase
 import com.raghim.herz.core.domain.door.RemoveDoorUseCase
+import com.raghim.herz.core.domain.door.ReorderDoorsUseCase
 import com.raghim.herz.core.domain.door.SetDoorOnLivePanelUseCase
 import com.raghim.herz.core.domain.door.UpdateDoorUseCase
 import com.raghim.herz.core.testing.FakeDoorRepository
@@ -35,7 +36,18 @@ class DoorsViewModelTest {
         updateDoor = UpdateDoorUseCase(repository),
         removeDoor = RemoveDoorUseCase(repository),
         setOnLivePanel = SetDoorOnLivePanelUseCase(repository),
+        reorderDoors = ReorderDoorsUseCase(repository),
     )
+
+    @Test
+    fun `dragging a section saves that order`() = runTest {
+        val viewModel = viewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.state.collect() }
+
+        viewModel.onIntent(DoorsIntent.Move(onLive = false, orderedIds = listOf("door2", "door1")))
+
+        assertEquals(listOf("door2", "door1"), viewModel.state.value.doors.map { it.id })
+    }
 
     @Test
     fun `lists doors by name`() = runTest {

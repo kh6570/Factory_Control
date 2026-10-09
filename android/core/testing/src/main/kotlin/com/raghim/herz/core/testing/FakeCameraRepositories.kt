@@ -60,6 +60,14 @@ class FakeCameraRepository(initial: List<Camera> = emptyList()) : CameraReposito
         credentialsById.remove(id)
     }
 
+    override suspend fun reorder(idsInOrder: List<String>) {
+        val rank = idsInOrder.withIndex().associate { it.value to it.index }
+        state.update { list ->
+            list.map { camera -> rank[camera.id]?.let { camera.copy(sortOrder = it) } ?: camera }
+                .sortedWith(compareBy({ it.sortOrder }, { it.name.lowercase() }))
+        }
+    }
+
     override suspend fun credentials(id: String): CameraCredentials? = credentialsById[id]
 }
 
@@ -86,6 +94,40 @@ class FakeActiveCamerasRepository(
                     startedBy = null,
                     startedAt = TestCameras.epoch.plusSeconds(current.size.toLong()),
                 )
+            }
+        }
+    }
+
+    override suspend fun raiseAlarm(cameraIds: List<String>, alarmId: String, highlight: Boolean) {
+        val known = cameras?.state?.value.orEmpty().associateBy { it.id }
+        val now = TestCameras.epoch.plusSeconds(10_000)
+        state.update { current ->
+            val byId = current.associateBy { it.cameraId }.toMutableMap()
+            cameraIds.distinct().forEach { id ->
+                val existing = byId[id]
+                byId[id] = ActiveCamera(
+                    cameraId = id,
+                    name = existing?.name ?: known[id]?.name ?: id,
+                    source = SessionSource.ALARM,
+                    state = StreamState.LIVE,
+                    startedBy = existing?.startedBy,
+                    startedAt = now,
+                    alarmId = alarmId,
+                    highlightAlarm = highlight,
+                )
+            }
+            byId.values.toList()
+        }
+    }
+
+    override suspend fun clearAlarm() {
+        state.update { list ->
+            list.map { camera ->
+                if (camera.source == SessionSource.ALARM) {
+                    camera.copy(source = SessionSource.MANUAL, alarmId = null, highlightAlarm = false)
+                } else {
+                    camera
+                }
             }
         }
     }

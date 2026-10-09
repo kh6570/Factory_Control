@@ -6,9 +6,14 @@ import androidx.room.Room
 import com.raghim.herz.core.database.HerzDatabase
 import com.raghim.herz.core.database.MIGRATION_1_2
 import com.raghim.herz.core.database.MIGRATION_2_3
+import com.raghim.herz.core.database.MIGRATION_3_4
+import com.raghim.herz.core.database.MIGRATION_4_5
+import com.raghim.herz.core.database.MIGRATION_5_6
+import com.raghim.herz.core.database.MIGRATION_6_7
 import com.raghim.herz.core.database.dao.ActiveSessionDao
 import com.raghim.herz.core.database.dao.CameraDao
 import com.raghim.herz.core.database.dao.DoorDao
+import com.raghim.herz.core.database.dao.SensorDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +28,7 @@ internal object DatabaseModule {
     @Singleton
     fun provideHerzDatabase(@ApplicationContext context: Context): HerzDatabase =
         Room.databaseBuilder(context, HerzDatabase::class.java, "herz.db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
 
     @Provides
@@ -34,4 +39,7 @@ internal object DatabaseModule {
 
     @Provides
     fun provideDoorDao(database: HerzDatabase): DoorDao = database.doorDao()
+
+    @Provides
+    fun provideSensorDao(database: HerzDatabase): SensorDao = database.sensorDao()
 }

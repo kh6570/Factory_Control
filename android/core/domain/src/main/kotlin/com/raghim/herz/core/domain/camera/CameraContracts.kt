@@ -27,6 +27,9 @@ interface CameraRepository {
 
     suspend fun remove(id: String)
 
+    /** Saves the Cameras-tab order. [idsInOrder] is every saved camera, first to last. */
+    suspend fun reorder(idsInOrder: List<String>)
+
     suspend fun credentials(id: String): CameraCredentials?
 }
 
@@ -35,6 +38,15 @@ interface ActiveCamerasRepository {
     val active: Flow<List<ActiveCamera>>
 
     suspend fun start(ids: List<String>)
+
+    /**
+     * Puts [cameraIds] on the wall as alarm cameras and moves any that are already there
+     * to the front. Unknown camera ids are ignored.
+     */
+    suspend fun raiseAlarm(cameraIds: List<String>, alarmId: String, highlight: Boolean)
+
+    /** Clears the alarm mark. Cameras stay on the wall as ordinary cameras. */
+    suspend fun clearAlarm()
 
     suspend fun stop(id: String)
 

@@ -8,7 +8,7 @@
     <string name="doors_deselect_all">Deselect all</string>
     <string name="doors_section_on_live">On the Live panel</string>
     <string name="doors_section_available">Not on Live yet</string>
-    <string name="doors_hint">Turn on Show on Live for the doors you want in the panel while watching cameras.</string>
+    <string name="doors_hint">Turn on Show on Live for the doors you want in the panel. Hold a card and drag it to change the order. Live uses the same order.</string>
     <string name="doors_add">Add door</string>
     <string name="doors_add_title">New door</string>
     <string name="doors_edit">Edit</string>

@@ -21,15 +21,36 @@ import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-/** Alarm cameras first, then manual cameras in start order (system design 6.3). */
-fun List<ActiveCamera>.sortedForWall(): List<ActiveCamera> =
-    sortedWith(compareBy<ActiveCamera> { it.source != SessionSource.ALARM }.thenBy { it.startedAt })
+/**
+ * Alarm cameras stay at the top. Inside each group the order is the one saved on the Cameras tab.
+ * When no saved order is known, newer alarms come first and manual cameras stay in start order.
+ */
+fun List<ActiveCamera>.sortedForWall(order: Map<String, Int> = emptyMap()): List<ActiveCamera> =
+    sortedWith { left, right ->
+        val leftAlarm = left.source == SessionSource.ALARM
+        val rightAlarm = right.source == SessionSource.ALARM
+        val leftRank = order[left.cameraId]
+        val rightRank = order[right.cameraId]
+        when {
+            leftAlarm != rightAlarm -> if (leftAlarm) -1 else 1
+            leftRank != null && rightRank != null && leftRank != rightRank -> leftRank.compareTo(rightRank)
+            leftAlarm -> right.startedAt.compareTo(left.startedAt)
+            else -> left.startedAt.compareTo(right.startedAt)
+        }
+    }
 
 class ObserveActiveCamerasUseCase @Inject constructor(
     private val repository: ActiveCamerasRepository,
+    private val cameras: CameraRepository,
 ) {
     operator fun invoke(): Flow<List<ActiveCamera>> =
-        repository.active.map { it.sortedForWall() }.distinctUntilChanged()
+        combine(repository.active, cameras.cameras) { active, saved ->
+            val order = saved
+                .sortedWith(compareBy<Camera>({ it.sortOrder }, { it.name.lowercase() }))
+                .mapIndexed { index, camera -> camera.id to index }
+                .toMap()
+            active.sortedForWall(order)
+        }.distinctUntilChanged()
 }
 
 class ObserveCameraOverviewsUseCase @Inject constructor(
@@ -39,7 +60,8 @@ class ObserveCameraOverviewsUseCase @Inject constructor(
     operator fun invoke(): Flow<List<CameraOverview>> =
         combine(cameras.cameras, active.active) { all, live ->
             val liveIds = live.mapTo(HashSet()) { it.cameraId }
-            all.sortedBy { it.name.lowercase() }.map { CameraOverview(it, it.id in liveIds) }
+            all.sortedWith(compareBy<Camera>({ it.sortOrder }, { it.name.lowercase() }))
+                .map { CameraOverview(it, it.id in liveIds) }
         }.distinctUntilChanged()
 }
 
@@ -48,6 +70,14 @@ class StartCamerasUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(ids: List<String>) {
         if (ids.isNotEmpty()) repository.start(ids.distinct())
+    }
+}
+
+class ReorderCamerasUseCase @Inject constructor(
+    private val repository: CameraRepository,
+) {
+    suspend operator fun invoke(idsInOrder: List<String>) {
+        if (idsInOrder.isNotEmpty()) repository.reorder(idsInOrder)
     }
 }
 

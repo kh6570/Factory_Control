@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,11 +25,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.raghim.herz.core.designsystem.theme.HerzTheme
 import com.raghim.herz.core.model.Camera
 import com.raghim.herz.core.model.CameraOverview
+import com.raghim.herz.core.ui.HoldToReorderColumn
 import com.raghim.herz.core.ui.LoadingState
 import com.raghim.herz.core.ui.MessageState
 import com.raghim.herz.feature.cameras.components.CameraCard
@@ -123,11 +123,27 @@ private fun CameraList(
         }
         if (onLive.isNotEmpty()) {
             item(key = "on_live_header") { SectionLabel(stringResource(R.string.cameras_section_on_live)) }
-            items(onLive, key = { it.camera.id }) { overview -> CameraRow(overview, onIntent) }
+            item(key = "on_live_rows") {
+                HoldToReorderColumn(
+                    items = onLive,
+                    key = { it.camera.id },
+                    onCommit = { rows -> onIntent(CamerasIntent.Move(onLive = true, orderedIds = rows.map { it.camera.id })) },
+                ) { overview, drag ->
+                    CameraRow(overview, onIntent, drag)
+                }
+            }
         }
         if (available.isNotEmpty()) {
             item(key = "available_header") { SectionLabel(stringResource(R.string.cameras_section_available)) }
-            items(available, key = { it.camera.id }) { overview -> CameraRow(overview, onIntent) }
+            item(key = "available_rows") {
+                HoldToReorderColumn(
+                    items = available,
+                    key = { it.camera.id },
+                    onCommit = { rows -> onIntent(CamerasIntent.Move(onLive = false, orderedIds = rows.map { it.camera.id })) },
+                ) { overview, drag ->
+                    CameraRow(overview, onIntent, drag)
+                }
+            }
         }
     }
 }
@@ -158,7 +174,7 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun CameraRow(overview: CameraOverview, onIntent: (CamerasIntent) -> Unit) {
+private fun CameraRow(overview: CameraOverview, onIntent: (CamerasIntent) -> Unit, drag: Modifier) {
     val id = overview.camera.id
     CameraCard(
         overview = overview,
@@ -167,6 +183,7 @@ private fun CameraRow(overview: CameraOverview, onIntent: (CamerasIntent) -> Uni
         },
         onRename = { onIntent(CamerasIntent.RequestRename(id)) },
         onRemove = { onIntent(CamerasIntent.RequestRemove(id)) },
+        modifier = drag,
     )
 }
 

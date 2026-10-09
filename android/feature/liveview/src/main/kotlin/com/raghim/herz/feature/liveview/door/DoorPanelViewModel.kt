@@ -100,7 +100,7 @@ class DoorPanelViewModel @Inject constructor(
             .map { DoorItem(it, pending[it.id], it.linkedCameraIds.any(wallIds::contains)) }
             .sortedWith(
                 compareBy<DoorItem> { it.door.lock == LockState.UNLOCKED }
-                    .thenByDescending { it.onWall }
+                    .thenBy { it.door.sortOrder }
                     .thenBy { it.door.name.lowercase() },
             )
         DoorPanelUiState(doors = items, holdToOpen = hold, requireFingerprint = fingerprint, isLoading = false)

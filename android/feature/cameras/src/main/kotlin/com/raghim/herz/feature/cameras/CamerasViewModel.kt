@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raghim.herz.core.domain.camera.ObserveCameraOverviewsUseCase
 import com.raghim.herz.core.domain.camera.RemoveCameraUseCase
+import com.raghim.herz.core.domain.camera.ReorderCamerasUseCase
 import com.raghim.herz.core.domain.camera.RenameCameraUseCase
 import com.raghim.herz.core.domain.camera.StartCamerasUseCase
 import com.raghim.herz.core.domain.camera.StopCameraUseCase
@@ -34,6 +35,7 @@ class CamerasViewModel @Inject constructor(
     private val stopCamera: StopCameraUseCase,
     private val renameCamera: RenameCameraUseCase,
     private val removeCamera: RemoveCameraUseCase,
+    private val reorderCameras: ReorderCamerasUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CamerasUiState())
@@ -80,7 +82,20 @@ class CamerasViewModel @Inject constructor(
             }
             CamerasIntent.ConfirmRemove -> confirmRemove()
             CamerasIntent.DismissDialog -> _state.update { it.copy(dialog = null) }
+            is CamerasIntent.Move -> move(intent.onLive, intent.orderedIds)
         }
+    }
+
+    private fun move(onLive: Boolean, orderedIds: List<String>) {
+        val all = _state.value.cameras
+        val byId = all.associateBy { it.camera.id }
+        val ordered = orderedIds.mapNotNull { byId[it] }
+        val slots = all.indices.filter { all[it].isActive == onLive }
+        if (ordered.size != slots.size) return
+        val next = all.toMutableList()
+        slots.forEachIndexed { index, slot -> next[slot] = ordered[index] }
+        _state.update { it.copy(cameras = next) }
+        perform { reorderCameras(next.map { it.camera.id }) }
     }
 
     private fun startSelected() {

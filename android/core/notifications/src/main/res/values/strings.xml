@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- In the name of God, the Most Gracious, the Most Merciful -->
+<resources>
+    <string name="alarm_channel_name">Sensor alarms</string>
+    <string name="alarm_channel_description">Rings when a sensor detects something.</string>
+    <string name="alarm_notification_body">A sensor detected something. Open Herz to watch the cameras.</string>
+</resources>

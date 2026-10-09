@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -51,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raghim.herz.core.designsystem.theme.HerzTheme
 import com.raghim.herz.core.model.Door
 import com.raghim.herz.core.model.DoorContact
+import com.raghim.herz.core.ui.HoldToReorderColumn
 import com.raghim.herz.core.ui.LoadingState
 import com.raghim.herz.core.ui.MessageState
 
@@ -162,11 +162,27 @@ private fun DoorList(doors: List<Door>, onIntent: (DoorsIntent) -> Unit, modifie
         }
         if (onLive.isNotEmpty()) {
             item(key = "on_live_header") { SectionLabel(stringResource(R.string.doors_section_on_live)) }
-            items(onLive, key = { it.id }) { door -> DoorCard(door, onIntent) }
+            item(key = "on_live_rows") {
+                HoldToReorderColumn(
+                    items = onLive,
+                    key = { it.id },
+                    onCommit = { rows -> onIntent(DoorsIntent.Move(onLive = true, orderedIds = rows.map { it.id })) },
+                ) { door, drag ->
+                    DoorCard(door, onIntent, drag)
+                }
+            }
         }
         if (available.isNotEmpty()) {
             item(key = "available_header") { SectionLabel(stringResource(R.string.doors_section_available)) }
-            items(available, key = { it.id }) { door -> DoorCard(door, onIntent) }
+            item(key = "available_rows") {
+                HoldToReorderColumn(
+                    items = available,
+                    key = { it.id },
+                    onCommit = { rows -> onIntent(DoorsIntent.Move(onLive = false, orderedIds = rows.map { it.id })) },
+                ) { door, drag ->
+                    DoorCard(door, onIntent, drag)
+                }
+            }
         }
     }
 }
@@ -197,8 +213,8 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun DoorCard(door: Door, onIntent: (DoorsIntent) -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
+private fun DoorCard(door: Door, onIntent: (DoorsIntent) -> Unit, modifier: Modifier = Modifier) {
+    Card(modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {

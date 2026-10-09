@@ -14,6 +14,7 @@ import com.raghim.herz.core.domain.door.OpenDoorUseCase
 import com.raghim.herz.core.model.DoorContact
 import com.raghim.herz.core.model.LockState
 import com.raghim.herz.core.testing.FakeActiveCamerasRepository
+import com.raghim.herz.core.testing.FakeCameraRepository
 import com.raghim.herz.core.testing.FakeDoorCommandSigner
 import com.raghim.herz.core.testing.FakeDoorRepository
 import com.raghim.herz.core.testing.FakeUserSettingsRepository
@@ -56,7 +57,7 @@ class DoorPanelViewModelTest {
 
     private fun viewModel() = DoorPanelViewModel(
         observeDoors = ObserveDoorsUseCase(doors),
-        observeActiveCameras = ObserveActiveCamerasUseCase(active),
+        observeActiveCameras = ObserveActiveCamerasUseCase(active, FakeCameraRepository(cameras)),
         observeHoldToOpen = ObserveHoldToOpenUseCase(settings),
         observeRequireFingerprint = ObserveRequireFingerprintUseCase(settings),
         openDoor = OpenDoorUseCase(doors, signer, settings, AppClock { TestCameras.epoch }),
@@ -68,15 +69,15 @@ class DoorPanelViewModelTest {
     }
 
     @Test
-    fun `doors of cameras on the wall come first, then by name`() = runTest {
+    fun `live doors follow the saved order, with an open door last`() = runTest {
         val vm = viewModel()
         subscribe(vm)
 
         val items = vm.state.value.doors
-        assertEquals(listOf("door2", "door1", "door3"), items.map { it.door.id })
+        assertEquals(listOf("door1", "door2", "door3"), items.map { it.door.id })
         assertFalse(vm.state.value.doors.any { it.door.id == "door4" })
-        assertTrue(items[0].onWall)
-        assertFalse(items[1].onWall)
+        assertTrue(items[1].onWall)
+        assertFalse(items[0].onWall)
     }
 
     @Test
@@ -92,7 +93,7 @@ class DoorPanelViewModelTest {
         vm.onIntent(DoorPanelIntent.Lock("door1"))
 
         assertEquals(LockState.LOCKED, vm.item("door1").door.lock)
-        assertEquals(listOf("door2", "door1", "door3"), vm.state.value.doors.map { it.door.id })
+        assertEquals(listOf("door1", "door2", "door3"), vm.state.value.doors.map { it.door.id })
     }
 
     @Test

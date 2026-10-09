@@ -9,8 +9,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DoorDao {
-    @Query("SELECT * FROM doors ORDER BY name COLLATE NOCASE")
+    @Query("SELECT * FROM doors ORDER BY sortOrder, name COLLATE NOCASE")
     fun observeAll(): Flow<List<DoorEntity>>
+
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) FROM doors")
+    suspend fun maxSortOrder(): Int
 
     @Query("SELECT COUNT(*) FROM doors")
     suspend fun count(): Int
@@ -23,6 +26,9 @@ interface DoorDao {
 
     @Query("UPDATE doors SET onLivePanel = :shown WHERE id = :id")
     suspend fun setOnLivePanel(id: String, shown: Boolean)
+
+    @Query("UPDATE doors SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun setSortOrder(id: String, sortOrder: Int)
 
     @Query("DELETE FROM doors WHERE id = :id")
     suspend fun delete(id: String)

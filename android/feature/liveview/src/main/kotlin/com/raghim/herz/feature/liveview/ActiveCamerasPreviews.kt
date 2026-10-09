@@ -52,6 +52,8 @@ private fun previewState(count: Int, mode: NetworkMode = NetworkMode.LAN): Activ
             state = StreamState.LIVE,
             startedBy = null,
             startedAt = Instant.EPOCH,
+            alarmId = if (i == 0 && count > 1) "preview-alarm" else null,
+            highlightAlarm = i == 0 && count > 1,
         )
     }
     val budget = if (mode == NetworkMode.CELLULAR) 4 else 9

@@ -14,7 +14,8 @@ import kotlinx.coroutines.flow.Flow
 interface ActiveSessionDao {
     @Query(
         """
-        SELECT s.cameraId AS cameraId, c.name AS name, s.source AS source, s.startedAtEpochMs AS startedAtEpochMs
+        SELECT s.cameraId AS cameraId, c.name AS name, s.source AS source,
+            s.startedAtEpochMs AS startedAtEpochMs, s.alarmId AS alarmId, s.highlight AS highlight
         FROM active_sessions s
         JOIN cameras c ON c.id = s.cameraId
         ORDER BY s.startedAtEpochMs
@@ -28,6 +29,35 @@ interface ActiveSessionDao {
 
     @Query("SELECT id FROM cameras WHERE id IN (:ids)")
     suspend fun existingCameraIds(ids: List<String>): List<String>
+
+    @Query("SELECT cameraId FROM active_sessions WHERE cameraId IN (:ids)")
+    suspend fun activeCameraIds(ids: List<String>): List<String>
+
+    /** Drops the alarm mark. The cameras remain on the wall. */
+    @Query(
+        """
+        UPDATE active_sessions
+        SET source = :manualSource, alarmId = NULL, highlight = 0
+        WHERE source = :alarmSource
+        """,
+    )
+    suspend fun clearAlarm(manualSource: String, alarmSource: String)
+
+    /** Moves a camera that is already on the wall to the front as an alarm camera. */
+    @Query(
+        """
+        UPDATE active_sessions
+        SET source = :source, startedAtEpochMs = :startedAtEpochMs, alarmId = :alarmId, highlight = :highlight
+        WHERE cameraId = :cameraId
+        """,
+    )
+    suspend fun promote(
+        cameraId: String,
+        source: String,
+        startedAtEpochMs: Long,
+        alarmId: String,
+        highlight: Boolean,
+    )
 
     /** Like [insertIgnore], but drops sessions whose camera no longer exists. */
     @Transaction

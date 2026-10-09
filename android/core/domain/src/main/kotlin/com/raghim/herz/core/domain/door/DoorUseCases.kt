@@ -17,7 +17,9 @@ class ObserveDoorsUseCase @Inject constructor(
     private val repository: DoorRepository,
 ) {
     operator fun invoke(): Flow<List<Door>> =
-        repository.doors.map { doors -> doors.sortedBy { it.name.lowercase() } }.distinctUntilChanged()
+        repository.doors.map { doors ->
+            doors.sortedWith(compareBy<Door>({ it.sortOrder }, { it.name.lowercase() }))
+        }.distinctUntilChanged()
 }
 
 /**
@@ -129,4 +131,12 @@ class RemoveDoorUseCase @Inject constructor(
     private val repository: DoorRepository,
 ) {
     suspend operator fun invoke(id: String) = repository.remove(id)
+}
+
+class ReorderDoorsUseCase @Inject constructor(
+    private val repository: DoorRepository,
+) {
+    suspend operator fun invoke(idsInOrder: List<String>) {
+        if (idsInOrder.isNotEmpty()) repository.reorder(idsInOrder)
+    }
 }

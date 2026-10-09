@@ -38,11 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raghim.herz.core.model.ActiveCamera
+import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
 import com.raghim.herz.core.video.PlayerState
 import com.raghim.herz.core.video.VideoPlayer
@@ -94,10 +96,16 @@ internal fun FullscreenCamera(
         }
     }
 
+    val highlightCamera = tiles.getOrNull(pagerState.settledPage)
     Box(
         modifier
             .fillMaxSize()
             .background(Color.Black)
+            .alarmHighlightBorder(
+                active = highlightCamera?.source == SessionSource.ALARM && highlightCamera.highlightAlarm,
+                alarmId = highlightCamera?.alarmId,
+                shape = RectangleShape,
+            )
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,

@@ -3,6 +3,7 @@
 <resources>
     <string name="liveview_title">Live</string>
     <string name="liveview_settings">Grid settings</string>
+    <string name="liveview_reset_alarm">Reset alarm</string>
     <string name="liveview_columns_title">Cameras per row</string>
     <string name="liveview_columns_automatic">Automatic</string>
     <plurals name="liveview_columns_count">

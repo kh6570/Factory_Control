@@ -8,11 +8,19 @@ import com.raghim.herz.core.domain.camera.ObserveActiveCamerasUseCase
 import com.raghim.herz.core.domain.camera.ObserveNetworkModeUseCase
 import com.raghim.herz.core.domain.door.ObserveLiveGridColumnsUseCase
 import com.raghim.herz.core.domain.door.SetLiveGridColumnsUseCase
+import com.raghim.herz.core.domain.sensor.DismissAlarmUseCase
+import com.raghim.herz.core.domain.sensor.ObserveRingingAlarmUseCase
+import com.raghim.herz.core.domain.sensor.ResetLiveAlarmUseCase
+import com.raghim.herz.core.model.AlarmStyle
 import com.raghim.herz.core.model.NetworkMode
+import com.raghim.herz.core.model.RingingAlarm
 import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
 import com.raghim.herz.core.testing.FakeActiveCamerasRepository
+import com.raghim.herz.core.testing.FakeCameraRepository
+import com.raghim.herz.core.testing.FakeAlarmAnnouncer
 import com.raghim.herz.core.testing.FakeNetworkMonitor
+import com.raghim.herz.core.testing.FakeRingingAlarmStore
 import com.raghim.herz.core.testing.FakeUserSettingsRepository
 import com.raghim.herz.core.testing.FakeVideoPlayer
 import com.raghim.herz.core.testing.FakeVideoPlayerFactory
@@ -46,15 +54,19 @@ class ActiveCamerasViewModelTest {
     private val factory = FakeVideoPlayerFactory()
     private val pool = PlayerPool(factory)
     private val settings = FakeUserSettingsRepository()
+    private val ringing = FakeRingingAlarmStore()
+    private val announcer = FakeAlarmAnnouncer()
 
     private fun viewModel(
         savedState: SavedStateHandle = SavedStateHandle(),
         monitor: NetworkMonitor = network,
     ) = ActiveCamerasViewModel(
-        observeActiveCameras = ObserveActiveCamerasUseCase(repository),
+        observeActiveCameras = ObserveActiveCamerasUseCase(repository, FakeCameraRepository(cameras)),
         observeNetworkMode = ObserveNetworkModeUseCase(monitor),
         observeLiveGridColumns = ObserveLiveGridColumnsUseCase(settings),
+        observeRingingAlarm = ObserveRingingAlarmUseCase(ringing),
         setLiveGridColumns = SetLiveGridColumnsUseCase(settings),
+        resetLiveAlarm = ResetLiveAlarmUseCase(repository, DismissAlarmUseCase(ringing, announcer)),
         pool = pool,
         savedState = savedState,
     )
@@ -82,6 +94,31 @@ class ActiveCamerasViewModelTest {
             assertEquals(listOf("cam02", "cam01"), loaded.tiles.map { it.cameraId })
             assertEquals(NetworkMode.LAN, loaded.networkMode)
         }
+    }
+
+    @Test
+    fun `reset alarm stops the ring and clears the alarm mark`() = runTest {
+        repository.state.value = listOf(
+            TestCameras.active(cameras[0]),
+            TestCameras.active(cameras[1], source = SessionSource.ALARM, startedAt = TestCameras.epoch.plusSeconds(60))
+                .copy(alarmId = "alarm-1", highlightAlarm = true),
+        )
+        ringing.show(RingingAlarm("sensor1", "Gate", AlarmStyle.VibrationOnly))
+        val vm = viewModel()
+        subscribe(vm)
+
+        assertTrue(vm.state.value.alarmActive)
+
+        vm.onIntent(ActiveCamerasIntent.ResetAlarm)
+
+        val tiles = repository.state.value.associateBy { it.cameraId }
+        assertEquals(SessionSource.MANUAL, tiles.getValue("cam02").source)
+        assertFalse(tiles.getValue("cam02").highlightAlarm)
+        assertNull(tiles.getValue("cam02").alarmId)
+        assertEquals(SessionSource.MANUAL, tiles.getValue("cam01").source)
+        assertNull(ringing.current.value)
+        assertEquals(1, announcer.stopped)
+        assertFalse(vm.state.value.alarmActive)
     }
 
     @Test

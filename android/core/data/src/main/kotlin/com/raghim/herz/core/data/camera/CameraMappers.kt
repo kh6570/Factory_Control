@@ -18,6 +18,7 @@ internal fun CameraEntity.toModel(): Camera = Camera(
     manufacturer = manufacturer,
     model = model,
     addedAt = Instant.ofEpochMilli(addedAtEpochMs),
+    sortOrder = sortOrder,
 )
 
 internal fun Camera.toEntity(encryptedUsername: String?, encryptedPassword: String?): CameraEntity = CameraEntity(
@@ -31,6 +32,7 @@ internal fun Camera.toEntity(encryptedUsername: String?, encryptedPassword: Stri
     addedAtEpochMs = addedAt.toEpochMilli(),
     encryptedUsername = encryptedUsername,
     encryptedPassword = encryptedPassword,
+    sortOrder = sortOrder,
 )
 
 internal fun ActiveSessionRow.toModel(): ActiveCamera = ActiveCamera(
@@ -40,4 +42,6 @@ internal fun ActiveSessionRow.toModel(): ActiveCamera = ActiveCamera(
     state = StreamState.LIVE,
     startedBy = null,
     startedAt = Instant.ofEpochMilli(startedAtEpochMs),
+    alarmId = alarmId,
+    highlightAlarm = highlight,
 )

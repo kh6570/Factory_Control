@@ -42,6 +42,43 @@ class LocalActiveCamerasRepository @Inject constructor(
         }
     }
 
+    override suspend fun raiseAlarm(cameraIds: List<String>, alarmId: String, highlight: Boolean) {
+        val ids = cameraIds.distinct()
+        if (ids.isEmpty()) return
+        withContext(io) {
+            val known = activeSessionDao.existingCameraIds(ids).toSet()
+            if (known.isEmpty()) return@withContext
+            val present = activeSessionDao.activeCameraIds(known.toList()).toSet()
+            val now = clock.now().toEpochMilli()
+            known.filter { it in present }.forEach { id ->
+                activeSessionDao.promote(
+                    cameraId = id,
+                    source = SessionSource.ALARM.name,
+                    startedAtEpochMs = now,
+                    alarmId = alarmId,
+                    highlight = highlight,
+                )
+            }
+            val fresh = known.filter { it !in present }.map { id ->
+                ActiveSessionEntity(
+                    cameraId = id,
+                    source = SessionSource.ALARM.name,
+                    startedAtEpochMs = now,
+                    alarmId = alarmId,
+                    highlight = highlight,
+                )
+            }
+            activeSessionDao.insertIgnore(fresh)
+        }
+    }
+
+    override suspend fun clearAlarm() = withContext(io) {
+        activeSessionDao.clearAlarm(
+            manualSource = SessionSource.MANUAL.name,
+            alarmSource = SessionSource.ALARM.name,
+        )
+    }
+
     override suspend fun stop(id: String) = withContext(io) {
         activeSessionDao.delete(id)
     }

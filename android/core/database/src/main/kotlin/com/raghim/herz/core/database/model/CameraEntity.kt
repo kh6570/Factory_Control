@@ -1,6 +1,7 @@
 // In the name of God, the Most Gracious, the Most Merciful
 package com.raghim.herz.core.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -17,6 +18,7 @@ data class CameraEntity(
     val addedAtEpochMs: Long,
     val encryptedUsername: String?,
     val encryptedPassword: String?,
+    @ColumnInfo(defaultValue = "0") val sortOrder: Int = 0,
 ) {
     override fun toString(): String =
         "CameraEntity(id=$id, name=$name, host=$host, hasCredentials=${encryptedPassword != null})"

@@ -65,6 +65,7 @@ class DoorUseCasesTest {
         override suspend fun remove(id: String) {
             state.value = state.value.filterNot { it.id == id }
         }
+        override suspend fun reorder(idsInOrder: List<String>) = Unit
     }
 
     private class Settings(required: Boolean = true) : UserSettingsRepository {

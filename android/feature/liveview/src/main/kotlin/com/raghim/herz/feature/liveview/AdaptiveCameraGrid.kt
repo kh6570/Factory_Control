@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.raghim.herz.core.model.ActiveCamera
+import com.raghim.herz.core.model.SessionSource
 import com.raghim.herz.core.model.StreamQuality
 import com.raghim.herz.core.video.VideoPlayer
 
@@ -65,10 +66,15 @@ internal fun AdaptiveCameraGrid(
         val currentTiles by rememberUpdatedState(tiles)
         val liveIds by remember(gridState, liveBudget) {
             derivedStateOf {
+                val snapshot = currentTiles
                 liveTileIds(
                     visibleIds = gridState.layoutInfo.visibleItemsInfo.mapNotNull { it.key as? String },
-                    allIds = currentTiles.map { it.cameraId },
+                    allIds = snapshot.map { it.cameraId },
                     budget = liveBudget,
+                    alarmIds = snapshot
+                        .filter { it.source == SessionSource.ALARM }
+                        .map { it.cameraId }
+                        .toSet(),
                 )
             }
         }

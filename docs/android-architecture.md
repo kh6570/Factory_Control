@@ -88,18 +88,18 @@ Status: **Empty** = build file only. **Started** = some code. **Done** = done wi
 | --- | --- | --- | --- |
 | `:core:model` | `Camera`, `ActiveCamera`, `SessionSource`, `StreamState`, `StreamProfile`, `DiscoveredDevice`, `Door`, `Alarm`, `Node`, `User`, `Role`, `NetworkMode` | nothing | Started (camera types) |
 | `:core:common` | `AppResult`, dispatcher qualifiers, `@AppScope`, time source | nothing | Done |
-| `:core:domain` | Repository and source interfaces, use cases (`ObserveActiveCameras`, `StartCamera`, `StopCamera`, `OpenDoor`, `AcknowledgeAlarm`, ...), `liveBudget`, sorting rules | `:core:model`, `:core:common` (api) | Started (camera use cases) |
+| `:core:domain` | Repository and source interfaces, use cases (`ObserveActiveCameras`, `StartCamera`, `StopCamera`, `OpenDoor`, sensor alarm use cases, ...), `liveBudget`, sorting rules | `:core:model`, `:core:common` (api) | Started (cameras, doors, sensors) |
 
 ### Android core (`herz.android.library`, Compose ones marked)
 
 | Module | Holds | May depend on | Status |
 | --- | --- | --- | --- |
-| `:core:data` | Repository impls, `EventStream` router, `ServerCameraSource`, sync workers (D14) | domain, model, common, network, database, datastore, security | Started (local camera repositories, `DirectLanCameraSource`) |
+| `:core:data` | Repository impls, `EventStream` router, `ServerCameraSource`, sync workers (D14) | domain, model, common, network, database, datastore, security | Started (local cameras, doors, sensors, alarm coordinator) |
 | `:core:network` | Retrofit APIs, OkHttp, WebSocket, `CertificatePinner`, auth interceptor, token refresh, `NetworkMonitor` | model, common, domain, security | Started (`NetworkMonitor` only) |
-| `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Started (cameras, active sessions, doors) |
+| `:core:database` | Room DB, DAOs, entities (cameras, doors, nodes, alarms, saved clips, saved LAN cameras) | model, common | Started (cameras, active sessions, doors, sensors) |
 | `:core:datastore` | DataStore settings: tile limits, stream quality, player choice | model, common | Started (hold-to-open time) |
 | `:core:security` | `TokenStore` (Tink + Keystore), `DeviceKey`, `BiometricSigner` exactly as spec D11, encrypted camera passwords | common, domain | Started (camera password cipher, `DeviceKey`, `BiometricDoorSigner`) |
-| `:core:notifications` | FCM service, channels, `AlarmNotifier`, full-screen intent, dedupe | domain, model, common | Empty |
+| `:core:notifications` | FCM service, channels, `AlarmNotifier`, full-screen intent, dedupe | domain, model, common | Started (local ringtone, vibration, alarm notification). No FCM |
 | `:core:designsystem` (Compose) | `HerzTheme`, colors, type, `CameraTile` frame, `StatusBadge`, `HoldToConfirmButton` | nothing | Started (theme, `StatusBadge`, `HoldToConfirmButton`, icons) |
 | `:core:ui` (Compose) | Loading, empty, error, offline states, shared adaptive helpers | designsystem (api), model | Started (message and loading states) |
 | `:core:testing` (Compose) | Fakes for every domain interface, `FakeVideoPlayer`, `MainDispatcherRule`, Turbine helpers | domain, model, common, video (api) | Started (camera fakes) |
@@ -125,19 +125,19 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 
 | Module | Screens | Extra deps | Status |
 | --- | --- | --- | --- |
-| `:feature:liveview` | Active Cameras grid, maximize, swipe, Back (spec D10), door panel (bottom panel on phones, side column on wide screens) | `:core:video` | Started (no alarm banner yet) |
+| `:feature:liveview` | Active Cameras grid, maximize, swipe, Back (spec D10), door panel (bottom panel on phones, side column on wide screens) | `:core:video` | Started (newest alarm cameras first, blinking red border) |
 | `:feature:cameras` | Camera list, Start/Stop, multi-select, camera settings | | Done |
 | `:feature:discovery` | Find cameras, enter login, test, save (dev) | | Done |
 | `:feature:auth` | Login, TOTP, device registration | | Empty |
 | `:feature:dashboard` | Alarms, doors, node health summary | | Empty |
-| `:feature:alarms` | Full-screen alarm, list, acknowledge | | Empty |
+| `:feature:alarms` | Full-screen alarm, list, acknowledge | | Started (sensor list, per-sensor menu, camera links, 20s test, stop overlay). No server list |
 | `:feature:playback` | Timeline, recording search, export clip | `:core:video` | Empty |
 | `:feature:recordings` | Clips saved on the phone | | Empty |
 | `:feature:devices` | Node health | | Empty |
 | `:feature:rules` | Admin: sensor to camera links | | Empty |
 | `:feature:users` | Admin: users, roles, device approval | | Empty |
 | `:feature:doors` | Door list and detail, hold-to-open, biometric, logs | `:core:security` | Started (add, edit, remove) |
-| `:feature:settings` | Stream quality, tile limits, notifications, about | | Started (hold time, fingerprint on or off) |
+| `:feature:settings` | Stream quality, tile limits, notifications, about | | Started (hold time, fingerprint) |
 
 `:feature:camerasettings` from the camera plan is folded into `:feature:cameras`, so there is one camera management screen set.
 
@@ -145,7 +145,7 @@ Each feature automatically gets model, common, domain, designsystem, ui, and `:c
 
 | Module | Holds | Status |
 | --- | --- | --- |
-| `:app` | `HerzApplication`, `MainActivity`, NavHost, bottom bar / rail, Hilt bindings that pick implementations per flavor | Started (Hilt root, NavHost with Cameras and Live, bottom bar / rail, local network permission. No flavors yet) |
+| `:app` | `HerzApplication`, `MainActivity`, NavHost, bottom bar / rail, Hilt bindings that pick implementations per flavor | Started (Hilt root, NavHost with Cameras, Doors, Sensors and Live, alarm overlay, local network permission. No flavors yet) |
 
 ## 4. Inside a feature module
 

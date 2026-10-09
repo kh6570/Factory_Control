@@ -4,6 +4,7 @@ package com.raghim.herz.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -34,6 +36,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.raghim.herz.feature.alarms.AlarmAlertOverlay
 import com.raghim.herz.navigation.HerzNavHost
 import com.raghim.herz.navigation.TopLevelDestination
 import com.raghim.herz.navigation.navigateToTopLevel
@@ -54,12 +57,18 @@ fun HerzApp(viewModel: HerzAppViewModel = hiltViewModel()) {
     val onSelect: (TopLevelDestination) -> Unit = { navController.navigateToTopLevel(it) }
 
     val content: @Composable (Modifier) -> Unit = { modifier ->
-        Column(modifier.fillMaxSize()) {
-            if (!fullscreen) LocalNetworkAccessBanner(Modifier.statusBarsPadding())
-            HerzNavHost(
-                navController = navController,
-                onFullscreenChanged = { fullscreen = it },
-                modifier = Modifier.weight(1f),
+        Box(modifier) {
+            Column(Modifier.fillMaxSize()) {
+                if (!fullscreen) LocalNetworkAccessBanner(Modifier.statusBarsPadding())
+                HerzNavHost(
+                    navController = navController,
+                    onFullscreenChanged = { fullscreen = it },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            AlarmAlertOverlay(
+                onWatchLive = { navController.navigateToTopLevel(TopLevelDestination.LIVE) },
+                modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().fillMaxWidth(),
             )
         }
     }

@@ -12,6 +12,8 @@ data class ActiveCamera(
     val startedBy: String?,
     val startedAt: Instant,
     val alarmId: String? = null,
+    /** Red border on the tile. Chosen per sensor when the alarm is raised. */
+    val highlightAlarm: Boolean = false,
 )
 
 enum class SessionSource { ALARM, MANUAL }

@@ -2,6 +2,8 @@
 package com.raghim.herz.feature.liveview
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,12 +24,15 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,6 +51,12 @@ import com.raghim.herz.core.video.VideoScale
 
 internal val WallBackground = Color(0xFF07090C)
 private val TileShape = RoundedCornerShape(6.dp)
+
+/** Flashes before the alarm border stays solid. A few, so it attracts attention and then rests. */
+private const val ALARM_BORDER_BLINKS = 3
+
+/** One half of a flash. Three blinks take about a second. */
+private const val ALARM_BORDER_HALF_MS = 180
 
 /**
  * One camera on the wall. [isLive] = inside the live budget; [showVideo] = this tile may attach
@@ -69,7 +80,11 @@ internal fun CameraTile(
             .aspectRatio(TILE_ASPECT_RATIO)
             .clip(TileShape)
             .background(Color.Black)
-            .then(if (isAlarm) Modifier.border(2.dp, HerzTheme.status.alarm, TileShape) else Modifier)
+            .alarmHighlightBorder(
+                active = isAlarm && camera.highlightAlarm,
+                alarmId = camera.alarmId,
+                shape = TileShape,
+            )
             .clickable(onClick = onTap),
     ) {
         if (isLive) {
@@ -193,6 +208,24 @@ internal fun ErrorOverlay(
             }
         }
     }
+}
+
+/**
+ * Red border that blinks a few times, then stays solid. [alarmId] restarts the blink for a new alarm.
+ * Returns [this] unchanged when the sensor has the highlight turned off.
+ */
+@Composable
+internal fun Modifier.alarmHighlightBorder(active: Boolean, alarmId: String?, shape: Shape): Modifier {
+    val alpha = remember(alarmId, active) { Animatable(1f) }
+    LaunchedEffect(alarmId, active) {
+        if (!active) return@LaunchedEffect
+        repeat(ALARM_BORDER_BLINKS) {
+            alpha.animateTo(0.2f, tween(ALARM_BORDER_HALF_MS))
+            alpha.animateTo(1f, tween(ALARM_BORDER_HALF_MS))
+        }
+    }
+    if (!active) return this
+    return border(3.dp, HerzTheme.status.alarm.copy(alpha = alpha.value), shape)
 }
 
 private val ButtonPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)

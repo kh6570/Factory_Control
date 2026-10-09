@@ -91,7 +91,7 @@ class OfflineFirstCameraRepositoryTest {
             assertEquals(listOf("Gate", "Yard"), awaitItem().map { it.name })
 
             repository.rename(gate.id, "Zone")
-            assertEquals(listOf("Yard", "Zone"), awaitItem().map { it.name })
+            assertEquals(listOf("Zone", "Yard"), awaitItem().map { it.name })
 
             repository.remove(yard.id)
             assertEquals(listOf("Zone"), awaitItem().map { it.name })

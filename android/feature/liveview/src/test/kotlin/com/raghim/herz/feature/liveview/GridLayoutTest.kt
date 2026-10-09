@@ -52,6 +52,17 @@ class GridLayoutTest {
     }
 
     @Test
+    fun `alarm cameras keep a live slot even when scrolled off screen`() {
+        val all = (1..20).map { "cam$it" }
+        val onScreen = (10..15).map { "cam$it" }
+
+        assertEquals(
+            setOf("cam1", "cam2", "cam10", "cam11"),
+            liveTileIds(onScreen, all, budget = 4, alarmIds = setOf("cam1", "cam2")),
+        )
+    }
+
+    @Test
     fun `no budget means nothing is live`() {
         assertEquals(emptySet<String>(), liveTileIds(listOf("cam1"), listOf("cam1"), budget = 0))
     }

@@ -40,6 +40,9 @@ interface DoorRepository {
     suspend fun setOnLivePanel(id: String, shown: Boolean)
 
     suspend fun remove(id: String)
+
+    /** Saves the Doors-tab order. [idsInOrder] is every saved door, first to last. */
+    suspend fun reorder(idsInOrder: List<String>)
 }
 
 /** Signs a door command with the device key after a strong biometric check (spec D11). */

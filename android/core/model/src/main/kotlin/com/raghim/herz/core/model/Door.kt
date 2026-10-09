@@ -11,13 +11,15 @@ data class Door(
     val id: String,
     val name: String,
     val area: String? = null,
-    /** Cameras that show this door. Used to list the doors of the cameras on the wall first. */
+    /** Cameras that show this door. The Live panel marks a door when one of these is on the wall. */
     val linkedCameraIds: Set<String> = emptySet(),
     val lock: LockState = LockState.LOCKED,
     val contact: DoorContact = DoorContact.UNKNOWN,
     val isOnline: Boolean = true,
     /** Shown in the fold-out door list on the Live screen. */
     val onLivePanel: Boolean = false,
+    /** Position in the Doors list. The Live door panel uses this same order. */
+    val sortOrder: Int = 0,
     /** When an unlocked door locks again on its own. Null while locked. */
     val unlockedUntil: Instant? = null,
 )

@@ -107,6 +107,7 @@ class SimulatedDoorRepository @Inject constructor(
             isOnline = true,
             onLivePanel = false,
             addedAtEpochMs = clock.now().toEpochMilli(),
+            sortOrder = doorsDao.maxSortOrder() + 1,
         )
         doorsDao.upsert(entity)
         return entity.toDoor(live = null)
@@ -135,6 +136,11 @@ class SimulatedDoorRepository @Inject constructor(
         doorsDao.delete(id)
     }
 
+    override suspend fun reorder(idsInOrder: List<String>) {
+        ensureSeeded()
+        idsInOrder.forEachIndexed { index, id -> doorsDao.setSortOrder(id, index) }
+    }
+
     private suspend fun acknowledge(doorId: String): AppResult<Unit> {
         val door = saved(doorId) ?: return AppResult.Failure(AppError.NotFound)
         if (!door.isOnline) return AppResult.Failure(AppError.Offline)
@@ -151,7 +157,9 @@ class SimulatedDoorRepository @Inject constructor(
             if (seeded) return
             if (doorsDao.count() == 0) {
                 val now = clock.now().toEpochMilli()
-                SEED.forEach { doorsDao.upsert(it.copy(addedAtEpochMs = now)) }
+                SEED.forEachIndexed { index, door ->
+                    doorsDao.upsert(door.copy(addedAtEpochMs = now, sortOrder = index))
+                }
             }
             seeded = true
         }
@@ -167,6 +175,7 @@ class SimulatedDoorRepository @Inject constructor(
         isOnline = isOnline,
         onLivePanel = onLivePanel,
         unlockedUntil = live?.unlockedUntil,
+        sortOrder = sortOrder,
     )
 
     internal companion object {

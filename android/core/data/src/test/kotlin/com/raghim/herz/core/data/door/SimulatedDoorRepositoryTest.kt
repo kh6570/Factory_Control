@@ -134,6 +134,7 @@ class SimulatedDoorRepositoryTest {
 private class MemoryDoorDao : DoorDao {
     private val state = kotlinx.coroutines.flow.MutableStateFlow<List<DoorEntity>>(emptyList())
     override fun observeAll() = state
+    override suspend fun maxSortOrder(): Int = state.value.maxOfOrNull { it.sortOrder } ?: -1
     override suspend fun count(): Int = state.value.size
     override suspend fun upsert(entity: DoorEntity) {
         state.value = state.value.filterNot { it.id == entity.id } + entity
@@ -143,6 +144,9 @@ private class MemoryDoorDao : DoorDao {
     }
     override suspend fun setOnLivePanel(id: String, shown: Boolean) {
         state.value = state.value.map { if (it.id == id) it.copy(onLivePanel = shown) else it }
+    }
+    override suspend fun setSortOrder(id: String, sortOrder: Int) {
+        state.value = state.value.map { if (it.id == id) it.copy(sortOrder = sortOrder) else it }
     }
     override suspend fun delete(id: String) {
         state.value = state.value.filterNot { it.id == id }

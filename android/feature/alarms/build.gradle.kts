@@ -2,3 +2,8 @@
 plugins {
     alias(libs.plugins.herz.android.feature)
 }
+
+dependencies {
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.ktx)
+}

@@ -1,6 +1,7 @@
 // In the name of God, the Most Gracious, the Most Merciful
 package com.raghim.herz.core.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -15,4 +16,5 @@ data class DoorEntity(
     val isOnline: Boolean,
     val onLivePanel: Boolean,
     val addedAtEpochMs: Long,
+    @ColumnInfo(defaultValue = "0") val sortOrder: Int = 0,
 )

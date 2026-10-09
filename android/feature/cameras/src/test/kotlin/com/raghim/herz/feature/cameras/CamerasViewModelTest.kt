@@ -4,6 +4,7 @@ package com.raghim.herz.feature.cameras
 import app.cash.turbine.test
 import com.raghim.herz.core.domain.camera.ObserveCameraOverviewsUseCase
 import com.raghim.herz.core.domain.camera.RemoveCameraUseCase
+import com.raghim.herz.core.domain.camera.ReorderCamerasUseCase
 import com.raghim.herz.core.domain.camera.RenameCameraUseCase
 import com.raghim.herz.core.domain.camera.StartCamerasUseCase
 import com.raghim.herz.core.domain.camera.StopCameraUseCase
@@ -41,9 +42,22 @@ class CamerasViewModelTest {
         stopCamera = StopCameraUseCase(active),
         renameCamera = RenameCameraUseCase(cameras),
         removeCamera = RemoveCameraUseCase(cameras, active),
+        reorderCameras = ReorderCamerasUseCase(cameras),
     )
 
     private val liveIds get() = active.state.value.map { it.cameraId }.toSet()
+
+    @Test
+    fun `dragging a section saves that order for live`() = runTest {
+        val viewModel = viewModel()
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onIntent(CamerasIntent.Move(onLive = false, orderedIds = listOf(charlie.id, bravo.id)))
+            assertEquals(listOf(alpha.id, charlie.id, bravo.id), awaitItem().cameras.map { it.camera.id })
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertEquals(listOf(alpha.id, charlie.id, bravo.id), cameras.state.value.map { it.id })
+    }
 
     @Test
     fun `lists saved cameras with live count`() = runTest {

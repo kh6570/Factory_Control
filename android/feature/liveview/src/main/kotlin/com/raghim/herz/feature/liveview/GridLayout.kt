@@ -22,12 +22,21 @@ fun resolvedGridColumns(count: Int, chosen: Int?, wide: Boolean): Int {
 }
 
 /**
- * Tiles allowed to decode live video: the first [budget] tiles on screen, top to bottom. Before the
- * grid has been laid out [visibleIds] is empty, so the first tiles of the list are used instead.
+ * Tiles allowed to decode live video. Alarm cameras take slots first, even when scrolled off
+ * screen, then the first [budget] remaining tiles on screen. Before the grid has been laid out
+ * [visibleIds] is empty, so the first tiles of the list fill whatever budget is left.
  */
-fun liveTileIds(visibleIds: List<String>, allIds: List<String>, budget: Int): Set<String> {
-    val candidates = visibleIds.ifEmpty { allIds }
-    return candidates.take(budget.coerceAtLeast(0)).toSet()
+fun liveTileIds(
+    visibleIds: List<String>,
+    allIds: List<String>,
+    budget: Int,
+    alarmIds: Set<String> = emptySet(),
+): Set<String> {
+    val allowed = budget.coerceAtLeast(0)
+    val alarms = allIds.filter { it in alarmIds }.take(allowed)
+    val reserved = alarms.toSet()
+    val pool = visibleIds.ifEmpty { allIds }.filter { it !in reserved }
+    return (alarms + pool.take((allowed - alarms.size).coerceAtLeast(0))).toSet()
 }
 
 internal const val TILE_ASPECT_RATIO = 16f / 9f

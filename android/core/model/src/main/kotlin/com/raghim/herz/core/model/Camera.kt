@@ -16,6 +16,8 @@ data class Camera(
     val manufacturer: String? = null,
     val model: String? = null,
     val addedAt: Instant,
+    /** Position in the Cameras list. Live uses this same order. */
+    val sortOrder: Int = 0,
 ) {
     fun streamUri(quality: StreamQuality): String = when (quality) {
         StreamQuality.SUB -> subStreamUri ?: mainStreamUri

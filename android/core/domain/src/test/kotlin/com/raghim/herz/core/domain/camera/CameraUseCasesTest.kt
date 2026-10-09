@@ -41,7 +41,7 @@ class CameraUseCasesTest {
     )
 
     @Test
-    fun wallSortsAlarmCamerasFirstThenByStartTime() {
+    fun wallSortsNewestAlarmFirstThenManualCamerasByStartTime() {
         val sorted = listOf(
             active("m2", SessionSource.MANUAL, 2),
             active("a2", SessionSource.ALARM, 5),
@@ -49,7 +49,20 @@ class CameraUseCasesTest {
             active("a1", SessionSource.ALARM, 3),
         ).sortedForWall()
 
-        assertEquals(listOf("a1", "a2", "m1", "m2"), sorted.map { it.cameraId })
+        assertEquals(listOf("a2", "a1", "m1", "m2"), sorted.map { it.cameraId })
+    }
+
+    @Test
+    fun wallUsesTheSavedCameraOrderInsideEachGroup() {
+        val order = mapOf("a1" to 0, "m2" to 1, "a2" to 2, "m1" to 3)
+        val sorted = listOf(
+            active("m2", SessionSource.MANUAL, 2),
+            active("a2", SessionSource.ALARM, 5),
+            active("m1", SessionSource.MANUAL, 1),
+            active("a1", SessionSource.ALARM, 3),
+        ).sortedForWall(order)
+
+        assertEquals(listOf("a1", "a2", "m2", "m1"), sorted.map { it.cameraId })
     }
 
     @Test
@@ -142,6 +155,7 @@ class CameraUseCasesTest {
         }
         override suspend fun rename(id: String, name: String) = Unit
         override suspend fun remove(id: String) = state.update { l -> l.filterNot { it.id == id } }
+        override suspend fun reorder(idsInOrder: List<String>) = Unit
         override suspend fun credentials(id: String) = savedCredentials[id]
     }
 
@@ -150,6 +164,8 @@ class CameraUseCasesTest {
         override val active: Flow<List<ActiveCamera>> = state
         override suspend fun start(ids: List<String>) =
             state.update { it + ids.map { id -> active(id, SessionSource.MANUAL, 0) } }
+        override suspend fun raiseAlarm(cameraIds: List<String>, alarmId: String, highlight: Boolean) = Unit
+        override suspend fun clearAlarm() = Unit
         override suspend fun stop(id: String) = state.update { l -> l.filterNot { it.cameraId == id } }
         override suspend fun refresh() = Unit
     }

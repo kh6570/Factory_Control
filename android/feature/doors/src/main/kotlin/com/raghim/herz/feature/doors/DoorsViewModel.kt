@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.raghim.herz.core.domain.door.AddDoorUseCase
 import com.raghim.herz.core.domain.door.ObserveDoorsUseCase
 import com.raghim.herz.core.domain.door.RemoveDoorUseCase
+import com.raghim.herz.core.domain.door.ReorderDoorsUseCase
 import com.raghim.herz.core.domain.door.SetDoorOnLivePanelUseCase
 import com.raghim.herz.core.domain.door.UpdateDoorUseCase
 import com.raghim.herz.core.model.Door
@@ -40,6 +41,7 @@ sealed interface DoorsIntent {
     data object HideAllFromLive : DoorsIntent
     data object ConfirmRemove : DoorsIntent
     data object Dismiss : DoorsIntent
+    data class Move(val onLive: Boolean, val orderedIds: List<String>) : DoorsIntent
 }
 
 /** The door list: add, rename (with area) and remove. Opening a door stays on the live wall. */
@@ -50,6 +52,7 @@ class DoorsViewModel @Inject constructor(
     private val updateDoor: UpdateDoorUseCase,
     private val removeDoor: RemoveDoorUseCase,
     private val setOnLivePanel: SetDoorOnLivePanelUseCase,
+    private val reorderDoors: ReorderDoorsUseCase,
 ) : ViewModel() {
 
     private val dialog = MutableStateFlow<DoorsDialog?>(null)
@@ -76,7 +79,19 @@ class DoorsViewModel @Inject constructor(
             DoorsIntent.HideAllFromLive -> setAllOnLive(shown = false)
             DoorsIntent.ConfirmRemove -> confirmRemove()
             DoorsIntent.Dismiss -> dialog.value = null
+            is DoorsIntent.Move -> move(intent.onLive, intent.orderedIds)
         }
+    }
+
+    private fun move(onLive: Boolean, orderedIds: List<String>) {
+        val all = state.value.doors
+        val byId = all.associateBy { it.id }
+        val ordered = orderedIds.mapNotNull { byId[it] }
+        val slots = all.indices.filter { all[it].onLivePanel == onLive }
+        if (ordered.size != slots.size) return
+        val nextIds = all.toMutableList()
+        slots.forEachIndexed { index, slot -> nextIds[slot] = ordered[index] }
+        viewModelScope.launch { reorderDoors(nextIds.map { it.id }) }
     }
 
     private fun setAllOnLive(shown: Boolean) {
